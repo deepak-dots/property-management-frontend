@@ -170,8 +170,10 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-black shadow-md py-4 px-8">
-      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+    <header className="bg-black shadow-md py-4 px-4 sm:px-8">
+      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        {/* Logo */}
         <div className="flex-shrink-0">
           <Link href="/">
             <img
@@ -182,28 +184,31 @@ export default function Header() {
           </Link>
         </div>
 
-        <div className="flex flex-col gap-2 w-full md:max-w-3xl">
+        {/* Search bar */}
+        <div className="flex-grow w-full md:max-w-3xl">
           <SearchBar initialSearch={search} onSearch={handleSearch} />
         </div>
 
-        <nav className="flex space-x-6 text-white font-medium">
+        {/* Navigation */}
+        <nav className="flex flex-wrap justify-center md:justify-end gap-3 text-white font-medium">
           <Link href="/properties" className="hover:text-blue-400">
             Properties
           </Link>
 
           {isLoggedIn ? (
-            <>
-              <Link href="/admin/dashboard" className="hover:text-blue-400">Dashboard
-              </Link>
-            </>
+            <Link href="/admin/dashboard" className="hover:text-blue-400">
+              Dashboard
+            </Link>
           ) : (
-            <Link href="/admin/login" className="hover:text-blue-400">Admin Login
+            <Link href="/admin/login" className="hover:text-blue-400">
+              Admin Login
             </Link>
           )}
         </nav>
       </div>
 
-      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 mt-6">
+      {/* Filters */}
+      <div className="max-w-screen-xl mx-auto mt-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-2 sm:px-0">
         <FilterBar
           initialCity={city}
           initialBhkType={bhkType}
@@ -218,8 +223,9 @@ export default function Header() {
           onFilter={handleFilter}
           loading={loading}
         />
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        {error && <p className="text-red-500 text-sm mt-2 md:mt-0">{error}</p>}
       </div>
     </header>
+
   );
 }
