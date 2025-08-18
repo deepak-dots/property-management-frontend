@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
-const API_URL = process.env.REACT_APP_API_URL;
-console.log("API_URL:", process.env.REACT_APP_API_URL);
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+console.log("API_URL:", API_URL);
 
 
 export default function PropertyCard({ property }) {

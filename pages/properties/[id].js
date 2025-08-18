@@ -10,7 +10,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/thumbs';
 import axios from '../../utils/axiosInstance';
 import GetQuoteForm from "../../components/GetQuoteForm";
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
 

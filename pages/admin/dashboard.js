@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import SearchBar from '../../components/SearchBar';
 import AdminSidebar from '../../components/AdminSidebar';
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
 function ConfirmationModal({

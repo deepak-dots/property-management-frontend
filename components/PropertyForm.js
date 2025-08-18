@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import axios from '../utils/axiosInstance';
 import { useRouter } from 'next/router';
 import ActionDropdown from './ActionDropdown';
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const baseURL = `${API_URL}/uploads/`;
 
