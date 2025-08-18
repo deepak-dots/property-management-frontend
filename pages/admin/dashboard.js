@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import SearchBar from '../../components/SearchBar';
 import AdminSidebar from '../../components/AdminSidebar';
-
+const API_URL = process.env.REACT_APP_API_URL;
 
 
 function ConfirmationModal({
@@ -306,7 +306,7 @@ export default function AdminDashboard() {
                           <td className="px-4 py-2 border">
                             {p.images && p.images.length > 0 ? (
                               <img
-                                src={`http://localhost:5000/uploads/${p.images[0]}`}
+                              src={`${API_URL}/uploads/${p.images[0]}`}
                                 alt={p.title}
                                 className="h-16 w-24 object-cover rounded"
                               />

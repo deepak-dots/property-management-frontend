@@ -10,6 +10,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/thumbs';
 import axios from '../../utils/axiosInstance';
 import GetQuoteForm from "../../components/GetQuoteForm";
+const API_URL = process.env.REACT_APP_API_URL;
 
 
 
@@ -102,7 +103,7 @@ const PropertyDetail = () => {
                   src={
                     property.images[activeImageIndex].startsWith('http') 
                       ? property.images[activeImageIndex] 
-                      : `http://localhost:5000/uploads/${property.images[activeImageIndex]}`
+                      : `${API_URL}/uploads/${property.images[activeImageIndex]}`
                   }
                   alt={`${property.title} ${activeImageIndex + 1}`}
                   className="w-full h-80 object-cover rounded-md cursor-pointer mb-4"
@@ -119,7 +120,7 @@ const PropertyDetail = () => {
                 {(property.images || []).slice(0, 3).map((img, idx) => (
                   <img
                     key={idx}
-                    src={img.startsWith('http') ? img : `http://localhost:5000/uploads/${img}`}
+                    src={img.startsWith('http') ? img : `${API_URL}/uploads/${img}`}
                     alt={`Thumbnail ${idx + 1}`}
                     className={`w-25 h-20 object-cover rounded-md cursor-pointer border-2 ${
                       activeImageIndex === idx ? 'border-blue-600' : 'border-transparent'
@@ -218,7 +219,7 @@ const PropertyDetail = () => {
                 <SwiperSlide key={`slide-${idx}`}>
                   <div style={{ height: '70vh', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <img
-                      src={img.startsWith('http') ? img : `http://localhost:5000/uploads/${img}`}
+                      src={img.startsWith('http') ? img : `${API_URL}/uploads/${img}`}
                       alt={`Property Slide ${idx}`}
                       style={{ height: '100%', width: 'auto', objectFit: 'contain', borderRadius: '0.375rem' }}
                     />
@@ -240,7 +241,7 @@ const PropertyDetail = () => {
               {property.images.map((img, idx) => (
                 <SwiperSlide key={`thumb-${idx}`} className="cursor-pointer">
                   <img
-                    src={img.startsWith('http') ? img : `http://localhost:5000/uploads/${img}`}
+                    src={img.startsWith('http') ? img : `${API_URL}/uploads/${img}`}
                     alt={`Thumbnail ${idx}`}
                     className={`w-full h-20 object-cover rounded-md border-2 ${idx === activeImageIndex ? 'border-blue-600' : 'border-transparent'}`}
                   />

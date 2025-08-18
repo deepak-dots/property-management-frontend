@@ -1,11 +1,12 @@
 import { useRouter } from 'next/router';
+const API_URL = process.env.REACT_APP_API_URL;
 
 export default function PropertyCard({ property }) {
   const router = useRouter();
 
   // Compose image URL helper
   const getImageUrl = (img) =>
-    img.startsWith('http') ? img : `http://localhost:5000/uploads/${img}`;
+    img.startsWith('http') ? img : `${API_URL}/uploads/${img}`;
 
   return (
     <div 
