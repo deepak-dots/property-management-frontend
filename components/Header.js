@@ -31,6 +31,16 @@ export default function Header() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // Auto-refresh every 45 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      window.location.reload();
+    }, 45000); // 45000 ms = 45 seconds
+      return () => clearInterval(intervalId);
+  }, []);
+  
+  
+
   // On router ready, sync filters/search from query params
   useEffect(() => {
     if (!router.isReady) return;
