@@ -35,7 +35,7 @@ export default function Header() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       window.location.reload();
-    }, 45000); // 45000 ms = 45 seconds
+    }, 150000); // 45000 ms = 45 seconds
       return () => clearInterval(intervalId);
   }, []);
   
