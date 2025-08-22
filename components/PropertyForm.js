@@ -3,9 +3,8 @@ import { useForm } from 'react-hook-form';
 import axios from '../utils/axiosInstance';
 import { useRouter } from 'next/router';
 import ActionDropdown from './ActionDropdown';
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-const baseURL = `${API_URL}/uploads/`;
+// const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// const baseURL = `${API_URL}/uploads/`;  // ❌ Not needed anymore with Cloudinary
 
 const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
   const router = useRouter();
@@ -60,11 +59,15 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
       setValue('city', initialData.city || '');
       setValue('isActive', initialData.activeStatus === 'Active');
 
-      setExistingImages(
-        (initialData.images || []).map((img) =>
-          typeof img === 'string' ? img : img.url || img.path || ''
-        )
-      );
+      // Old (local uploads)
+      // setExistingImages(
+      //   (initialData.images || []).map((img) =>
+      //     typeof img === 'string' ? img : img.url || img.path || ''
+      //   )
+      // );
+
+      // ✅ New (Cloudinary returns full URLs already)
+      setExistingImages(initialData.images || []);
       setRemovedImages([]);
     }
   }, [initialData, isEdit, setValue]);
@@ -140,8 +143,8 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white shadow p-6 rounded-lg space-y-4">
-       {isEdit && initialData._id && <ActionDropdown propertyId={initialData._id} hideEdit={true} />}
+    <div className="max-w-3xl mx-auto bg-white shadow p-6 rounded-lg space-y-4">
+      {isEdit && initialData._id && <ActionDropdown propertyId={initialData._id} hideEdit={true} />}
 
       <h2 className="text-2xl font-bold mb-4">{isEdit ? 'Edit Property' : 'Add Property'}</h2>
 
@@ -489,14 +492,18 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
           {/* Display existing images */}
           <div className="mt-2 flex flex-wrap gap-4">
             {existingImages.map((url, index) => {
-              const fullUrl = url.startsWith('http') ? url : `${baseURL}${url}`;
+              // Old local uploads
+              // const fullUrl = url.startsWith('http') ? url : `${baseURL}${url}`;
+              // <img src={fullUrl} ... />
+
+              // ✅ New (Cloudinary already gives full URL)
               return (
                 <div
                   key={`existing-${index}`}
                   className="relative w-24 h-24 border rounded overflow-hidden"
                 >
                   <img
-                    src={fullUrl}
+                    src={url}
                     alt={`Existing image ${index + 1}`}
                     className="object-cover w-full h-full"
                   />
