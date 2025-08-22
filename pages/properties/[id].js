@@ -91,7 +91,7 @@ const PropertyDetail = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 className="text-3xl font-bold mb-4">
-        {property.bhkType} - {property.address}, {property.city}
+        {property.title} ({property.bhkType}), {property.city}
         </h1>
 
         <div className="md:flex md:gap-6 mb-6">
@@ -165,7 +165,7 @@ const PropertyDetail = () => {
 
       <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-6">
         <h1 className="text-3xl font-bold mb-4">More Details</h1>
-        <p className="mb-6 text-gray-600"><strong>bhkType:</strong> {property.bhkType || '-'}</p>
+        <p className="mb-6 text-gray-600"><strong>Property Name:</strong> {property.title} ({property.bhkType || '-'})</p>
         <p className="mb-6 text-gray-600"><strong>Developer:</strong> {property.developer || '-'}</p>
         <p className="mb-6 text-gray-600"><strong>Price:</strong> {property.price ? `₹${property.price.toLocaleString()}` : '-'}</p>
         <p className="mb-6 text-gray-600"><strong>Address:</strong> {property.address || '-'}, {property.city || '-'}</p>

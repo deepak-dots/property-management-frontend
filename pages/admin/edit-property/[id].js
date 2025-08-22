@@ -8,18 +8,19 @@ function ConfirmationModal({ isOpen, message, onConfirm, onCancel }) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded p-6 max-w-sm w-full shadow-lg">
+      <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-lg animate-fade-in">
+        <h3 className="text-lg font-semibold mb-4">Confirm Action</h3>
         <p className="mb-6">{message}</p>
         <div className="flex justify-end space-x-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100"
+            className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 transition"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition"
           >
             Delete
           </button>
@@ -42,10 +43,7 @@ export default function EditPropertyPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    if (!token) {
-      router.replace('/admin/login');
-      return;
-    }
+    if (!token) router.replace('/admin/login');
     if (!id) return;
 
     const fetchProperty = async () => {
@@ -62,21 +60,16 @@ export default function EditPropertyPage() {
         setLoading(false);
       }
     };
-
     fetchProperty();
   }, [id, router]);
 
-  const handleSuccess = () => {
-    router.push('/admin/dashboard');
-  };
+  const handleSuccess = () => router.push('/admin/dashboard');
 
   const handleDeleteConfirmed = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      if (!token) {
-        router.push('/admin/login');
-        return;
-      }
+      if (!token) router.push('/admin/login');
+
       await axios.delete(`/properties/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -91,43 +84,54 @@ export default function EditPropertyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 text-xl">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-500 text-xl">
         Loading property data...
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 bg-gray-100 p-8">
-        <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
-          <button
-            onClick={() => router.push('/admin/dashboard')}
-            className="mb-6 text-blue-600 hover:underline"
-          >
-            Back to Property List
-          </button>
+      <div className="flex-1 p-8">
+        <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-8 space-y-6">
 
           {initialData ? (
             <>
+
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl font-bold mb-6 text-gray-800">
+                Edit Property
+              </h1>
+
+              <button
+              onClick={() => router.push('/admin/dashboard')}
+              className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+            >
+              Back to Dashboard
+            </button>
+            </div>
+
               <PropertyForm
                 initialData={initialData}
                 isEdit={true}
                 onSuccess={handleSuccess}
               />
-              <button
-                onClick={openConfirm}
-                className="mt-6 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-              >
-                Delete Property
-              </button>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={openConfirm}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg shadow transition"
+                >
+                  Delete Property
+                </button>
+              </div>
             </>
           ) : (
-            <p className="text-center text-red-500">Property data not found.</p>
+            <p className="text-center text-red-500 font-medium">Property data not found.</p>
           )}
         </div>
       </div>
