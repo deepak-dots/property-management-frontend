@@ -31,12 +31,12 @@ export default function Header() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Auto-refresh every 45 seconds
+  // Auto-refresh every 5 min
   useEffect(() => {
     const intervalId = setInterval(() => {
-      window.location.reload();
-    }, 150000); // 45000 ms = 45 seconds
-      return () => clearInterval(intervalId);
+      //window.location.reload();
+    }, 500000); // 500000 ms = 5 min
+      //return () => clearInterval(intervalId);
   }, []);
   
   
