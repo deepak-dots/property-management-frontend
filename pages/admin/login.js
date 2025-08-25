@@ -36,7 +36,10 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div
+        className="min-h-screen flex items-center justify-center bg-gray-100 px-4 bg-cover bg-center"
+        style={{ backgroundImage: "url('../../../images/property1.jpg')", minHeight: "calc(100vh - 423px)" }}
+      >
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm space-y-4"
