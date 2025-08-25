@@ -89,7 +89,7 @@ const PropertyDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6">
+      <div className="max-w-5xl mx-auto rounded-lg shadow-md p-6">
         <h1 className="text-3xl font-bold mb-4">
         {property.title} ({property.bhkType}), {property.city}
         </h1>
@@ -189,23 +189,24 @@ const PropertyDetail = () => {
       </div>
 
       <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        contentLabel={modalMode === 'image' ? "Property Images" : "Get Quote Form"}
-        className="max-w-4xl mx-auto mt-20 bg-white p-6 rounded shadow-lg outline-none relative properties-get-quate-modal"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start"
-      >
-        <button
-          onClick={closeModal}
-          className="absolute top-3 right-3 text-3xl font-bold text-gray-800 hover:text-gray-600 close-btn"
+          isOpen={modalIsOpen}
+          onRequestClose={closeModal}
+          contentLabel={modalMode === 'image' ? "Property Images" : "Get Quote Form"}
+          className={`max-w-4xl mx-auto mt-20 p-6 rounded shadow-lg outline-none relative properties-get-quate-modal ${modalMode === 'image' ? "bg-white" : ""}`}
+          overlayClassName="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start"
         >
-         <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="30px" height="30px">
-          <path d="M 7.71875 6.28125 L 6.28125 7.71875 L 23.5625 25 L 6.28125 42.28125 L 7.71875 43.71875 L 25 26.4375 L 42.28125 43.71875 L 43.71875 42.28125 L 26.4375 25 L 43.71875 7.71875 L 42.28125 6.28125 L 25 23.5625 Z"/>
-         </svg>
-        </button>
 
+      
         {modalMode === 'image' && property.images?.length > 0 && (
           <>
+           <button
+              onClick={closeModal}
+              className="absolute top-3 right-3 text-3xl font-bold text-gray-800 hover:text-gray-600 close-btn"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="30px" height="30px">
+              <path d="M 7.71875 6.28125 L 6.28125 7.71875 L 23.5625 25 L 6.28125 42.28125 L 7.71875 43.71875 L 25 26.4375 L 42.28125 43.71875 L 43.71875 42.28125 L 26.4375 25 L 43.71875 7.71875 L 42.28125 6.28125 L 25 23.5625 Z"/>
+            </svg>
+            </button>
             <Swiper
               spaceBetween={10}
               slidesPerView={1}
