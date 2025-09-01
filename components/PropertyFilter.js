@@ -30,8 +30,7 @@ export default function PropertyFilters({
 
   const handleSliderChange = (values) => {
     setSliderValues(values);
-    onFilterChange({ target: { name: "priceMin", value: values[0] } });
-    onFilterChange({ target: { name: "priceMax", value: values[1] } });
+    onFilterChange({ priceMin: values[0], priceMax: values[1] });
   };
 
   const handleClear = () => {

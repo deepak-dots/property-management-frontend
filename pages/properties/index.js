@@ -123,24 +123,34 @@ export default function Properties() {
     fetchAllProperties();
   }, []);
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    const newFilters = { ...filters, [name]: value };
-
+  const handleFilterChange = (eOrObj) => {
+    let newFilters = { ...filters };
+  
+    if (eOrObj.target) {
+      const { name, value } = eOrObj.target;
+      newFilters[name] = value;
+    } else {
+      newFilters = { ...newFilters, ...eOrObj };
+    }
+  
+    // remove empty values
     Object.keys(newFilters).forEach((key) => {
       if (newFilters[key] === '' || newFilters[key] === null) delete newFilters[key];
     });
-
-    const paramsForUrl = { ...newFilters };
-    if (paramsForUrl.priceMin != null) paramsForUrl.priceMin = Number(paramsForUrl.priceMin);
-    if (paramsForUrl.priceMax != null) paramsForUrl.priceMax = Number(paramsForUrl.priceMax);
-
+  
+    // convert price to numbers
+    if (newFilters.priceMin != null) newFilters.priceMin = Number(newFilters.priceMin);
+    if (newFilters.priceMax != null) newFilters.priceMax = Number(newFilters.priceMax);
+  
     setFilters(newFilters);
     setCurrentPage(1);
-
-    const params = new URLSearchParams(paramsForUrl).toString();
-    router.push(`/properties?${params}`);
+  
+    // update URL
+    const params = new URLSearchParams(newFilters).toString();
+    router.push(`/properties?${params}`, undefined, { shallow: true });
   };
+  
+  
 
   const clearFilters = () => {
     setFilters({
