@@ -4,16 +4,16 @@ import axios from '../../utils/axiosInstance';
 import PropertyCard from '../../components/PropertyCard';
 import PropertyFilters from '../../components/PropertyFilter';
 
-
 export default function Properties() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
-    priceMin: '',
-    priceMax: '',
+    priceMin: null,
+    priceMax: null,
     city: '',
     bhkType: '',
+    propertyType: '',
     furnishing: '',
     transactionType: '',
     status: '',
@@ -21,10 +21,13 @@ export default function Properties() {
 
   const [filterOptions, setFilterOptions] = useState({
     cities: [],
+    propertyTypes: [],
     bhkTypes: [],
     furnishings: [],
     transactionTypes: [],
     statuses: [],
+    priceMin: 0,
+    priceMax: 1000000,
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,7 +40,6 @@ export default function Properties() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        // Add pagination params to query
         const params = { ...router.query, page: currentPage, limit: itemsPerPage };
 
         const res = await axios.get('/properties', { params });
@@ -49,7 +51,6 @@ export default function Properties() {
 
         setProperties(propertyList);
 
-        // Set pagination info from API response
         if (res.data.totalPages) {
           setTotalPages(res.data.totalPages);
         } else if (res.data.totalCount) {
@@ -58,23 +59,23 @@ export default function Properties() {
           setTotalPages(1);
         }
 
-        // Update filters from query params
         const query = router.query;
         setFilters({
           search: query.search || '',
           city: query.city || '',
           bhkType: query.bhkType || '',
+          propertyType: query.propertyType || '',
           furnishing: query.furnishing || '',
           transactionType: query.transactionType || '',
           status: query.status || '',
-          priceMin: query.priceMin || '',
-          priceMax: query.priceMax || '',
+          priceMin: query.priceMin ? Number(query.priceMin) : null,
+          priceMax: query.priceMax ? Number(query.priceMax) : null,
         });
       } catch (error) {
         console.error(error);
         setProperties([]);
         setTotalPages(1);
-      }finally {
+      } finally {
         setLoading(false);
       }
     };
@@ -93,13 +94,27 @@ export default function Properties() {
           ? res.data.properties
           : [];
 
+        const prices = allProperties.map((p) => p.price).filter(Boolean);
+        const minPrice = prices.length ? Math.min(...prices) : 0;
+        const maxPrice = prices.length ? Math.max(...prices) : 1000000;
+
         setFilterOptions({
           cities: [...new Set(allProperties.map((p) => p.city).filter(Boolean))].sort(),
+          propertyTypes: [...new Set(allProperties.map((p) => p.propertyType).filter(Boolean))].sort(),
           bhkTypes: [...new Set(allProperties.map((p) => p.bhkType).filter(Boolean))].sort(),
           furnishings: [...new Set(allProperties.map((p) => p.furnishing).filter(Boolean))].sort(),
           transactionTypes: [...new Set(allProperties.map((p) => p.transactionType).filter(Boolean))].sort(),
           statuses: [...new Set(allProperties.map((p) => p.status).filter(Boolean))].sort(),
+          priceMin: minPrice,
+          priceMax: maxPrice,
         });
+
+        // initialize filters with min/max on first load
+        setFilters((prev) => ({
+          ...prev,
+          priceMin: prev.priceMin ?? minPrice,
+          priceMax: prev.priceMax ?? maxPrice,
+        }));
       } catch (error) {
         console.error('Failed to fetch all properties for filter options', error);
       }
@@ -112,18 +127,16 @@ export default function Properties() {
     const { name, value } = e.target;
     const newFilters = { ...filters, [name]: value };
 
-    // Remove empty filters for clean URL
     Object.keys(newFilters).forEach((key) => {
-      if (newFilters[key] === '') delete newFilters[key];
+      if (newFilters[key] === '' || newFilters[key] === null) delete newFilters[key];
     });
 
-    // Convert price filters to numbers
     const paramsForUrl = { ...newFilters };
-    if (paramsForUrl.priceMin) paramsForUrl.priceMin = Number(paramsForUrl.priceMin);
-    if (paramsForUrl.priceMax) paramsForUrl.priceMax = Number(paramsForUrl.priceMax);
+    if (paramsForUrl.priceMin != null) paramsForUrl.priceMin = Number(paramsForUrl.priceMin);
+    if (paramsForUrl.priceMax != null) paramsForUrl.priceMax = Number(paramsForUrl.priceMax);
 
     setFilters(newFilters);
-    setCurrentPage(1); // reset to first page on filter change
+    setCurrentPage(1);
 
     const params = new URLSearchParams(paramsForUrl).toString();
     router.push(`/properties?${params}`);
@@ -132,8 +145,8 @@ export default function Properties() {
   const clearFilters = () => {
     setFilters({
       search: '',
-      priceMin: '',
-      priceMax: '',
+      priceMin: filterOptions.priceMin,
+      priceMax: filterOptions.priceMax,
       city: '',
       bhkType: '',
       furnishing: '',
@@ -149,8 +162,6 @@ export default function Properties() {
       <div className="max-w-7xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">Properties</h1>
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar Filters */}
-          
           <PropertyFilters
             filters={filters}
             filterOptions={filterOptions}
@@ -158,7 +169,6 @@ export default function Properties() {
             onClearFilters={clearFilters}
           />
 
-          {/* Property Grid */}
           <div className="md:w-3/4 w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading ? (
               <p className="text-center col-span-full text-gray-500">Loading...</p>
@@ -172,7 +182,6 @@ export default function Properties() {
           </div>
         </div>
 
-        {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="flex justify-center mt-6 space-x-4">
             <button

@@ -45,7 +45,7 @@ export default function PropertyCard({ property }) {
         {/* Show BHK Type instead of category */}
         {property.bhkType && (
           <p className="text-sm text-gray-600 mb-1">
-            <strong>{property.bhkType}</strong>
+            <strong>{property.bhkType !== 'N/A' ? property.bhkType : property.propertyType}</strong>
           </p>
         )}
 

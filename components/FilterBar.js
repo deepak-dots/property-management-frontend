@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 
 export default function FilterBar({
+  initialPropertyType = '',
   initialCity = '',
   initialBhkType = '',
   initialFurnishing = '',
   initialTransactionType = '',
   initialStatus = '',
+  propertyTypes = [],
   cities = [],
   bhkTypes = [],
   furnishings = [],
@@ -16,6 +18,7 @@ export default function FilterBar({
   onFilter,
   loading = false,
 }) {
+  const [propertyType, setPropertyType] = useState(initialPropertyType);
   const [city, setCity] = useState(initialCity);
   const [bhkType, setBhkType] = useState(initialBhkType);
   const [furnishing, setFurnishing] = useState(initialFurnishing);
@@ -23,6 +26,12 @@ export default function FilterBar({
   const [status, setStatus] = useState(initialStatus);
 
   // Sync props updates to local state
+
+  useEffect(() => {
+    setPropertyType(initialPropertyType);
+  }
+  , [initialPropertyType]);
+
   useEffect(() => {
     setCity(initialCity);
   }, [initialCity]);
@@ -45,11 +54,27 @@ export default function FilterBar({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onFilter({ city, bhkType, furnishing, transactionType, status });
+    onFilter({ city, bhkType, propertyType, furnishing, transactionType, status });
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 w-full flex-wrap">
+
+     {/* Property Type */}
+      <select
+        value={propertyType}
+        onChange={(e) => setPropertyType(e.target.value)}
+        className="border border-gray-600 rounded-md px-3 py-2 bg-black text-white"
+        disabled={loading}
+      >
+        <option value="">All Types</option>
+        {propertyTypes.map((type) => (  
+          <option key={type} value={type}>
+            {type}
+          </option>
+        ))}
+      </select>
+
       {/* City */}
       <select
         value={city}

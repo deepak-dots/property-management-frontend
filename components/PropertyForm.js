@@ -27,6 +27,7 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
       superBuiltupArea: '',
       developer: '',
       project: '',
+      propertyType:'',
       transactionType: '',
       status: '',
       price: '',
@@ -50,6 +51,7 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
       setValue('superBuiltupArea', initialData.superBuiltupArea || '');
       setValue('developer', initialData.developer || '');
       setValue('project', initialData.project || '');
+      setValue('propertyType', initialData.propertyType || '');
       setValue('transactionType', initialData.transactionType || '');
       setValue('status', initialData.status || '');
       setValue('price', initialData.price || '');
@@ -211,6 +213,29 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
           )}
         </div>
 
+        {/* Property Type */}
+        <div className="flex flex-col">
+          <label htmlFor="propertyType" className="mb-1 font-medium">
+            Property Type
+          </label>
+          <select
+            id="propertyType"
+            name="propertyType"
+            {...register('propertyType', { required: 'Property Type is required' })}
+            className={`py-2 px-3 border rounded ${
+              errors.propertyType ? 'border-red-500' : 'border-gray-300'
+            }`}
+          >
+            <option value="">Select Property Type</option>
+            <option>Flat</option>
+            <option>Villa</option>
+            <option>Duplex</option>
+          </select>
+          {errors.propertyType && (
+            <span className="text-red-500 text-sm mt-1">{errors.propertyType.message}</span>
+          )}
+        </div>
+
         {/* BHK Type */}
         <div className="flex flex-col">
           <label htmlFor="bhkType" className="mb-1 font-medium">
@@ -322,6 +347,8 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
             <span className="text-red-500 text-sm mt-1">{errors.superBuiltupArea.message}</span>
           )}
         </div>
+        
+        
 
         {/* Transaction Type */}
         <div className="flex flex-col">

@@ -21,7 +21,7 @@ export default function SearchBar({ initialSearch = '', onSearch }) {
     document.addEventListener('mousedown', onDocClick);
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
-  
+
 
   // Fetch suggestions with debounce
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function SearchBar({ initialSearch = '', onSearch }) {
     const t = setTimeout(async () => {
       try {
         setLoading(true);
-        // ✅ Fix: Proper API call
+        //  API call
         const res = await axios.get('/properties', {
           params: { search: searchValue },
         });
