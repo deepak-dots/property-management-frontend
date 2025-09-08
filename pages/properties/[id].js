@@ -10,6 +10,11 @@ import 'swiper/css/pagination';
 import 'swiper/css/thumbs';
 import axios from '../../utils/axiosInstance';
 import GetQuoteForm from "../../components/GetQuoteForm";
+import { useCompare } from "../../context/CompareContext";
+import CompareModal from '../../components/CompareModal'; 
+import { useFavorites } from '../../context/FavoritesContext';
+import { toast } from 'react-toastify';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
@@ -26,6 +31,17 @@ const PropertyDetail = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+
+  const { compareList, toggleCompare } = useCompare();
+  const { favorites, toggleFavorite } = useFavorites();
+
+  const [showCompareModal, setShowCompareModal] = useState(false); // ⬅️ new state
+
+  const handleCompareClick = () => {
+    toggleCompare(property._id);
+    setShowCompareModal(true); // open modal after toggling
+  };
+
 
   useEffect(() => {
     Modal.setAppElement('#__next');
@@ -155,13 +171,59 @@ const PropertyDetail = () => {
               <div><strong>Price:</strong> <p>{property.price ? `₹${property.price.toLocaleString()}` : '-'}</p></div>
             </div>
 
-            <button
-              className="mt-8 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
-              onClick={openFormModal}
-            >
-              Get Quote
-            </button>
+           
+
+            
+            {/* Compare Modal */}
+            <CompareModal
+              isOpen={showCompareModal}
+              onClose={() => setShowCompareModal(false)}
+            />
+
           </div>
+
+          
+        </div>
+
+        <div className="flex gap-3 mt-8 justify-end">
+          <button
+            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition"
+            onClick={openFormModal}
+          >
+            Get Quote
+          </button>
+
+          {/* Compare Button */}
+          <button
+            className={`px-6 py-2 rounded-md transition ${
+              compareList.includes(property._id)
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-blue-600 text-white hover:bg-blue-600"
+            }`}
+            onClick={handleCompareClick} 
+          >
+            {compareList.includes(property._id) ? "Remove from Compare" : "Add to Compare"}
+          </button>
+
+          {/* Favorites Button */}
+          <button
+            className={`px-6 py-2 rounded-md transition ${
+              favorites.includes(property._id)
+                ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                : "bg-gray-300 text-gray-800 hover:bg-gray-400"
+            }`}
+            onClick={() => {
+              toggleFavorite(property._id);
+
+              if (favorites.includes(property._id)) {
+                toast.info(`${property.title} removed from favorites`);
+              } else {
+                toast.success(`${property.title} added to favorites`);
+              }
+            }}
+          >
+            {favorites.includes(property._id) ? "★ Favorited" : "☆ Add to Favorites"}
+          </button>
         </div>
       </div>
 
@@ -174,19 +236,57 @@ const PropertyDetail = () => {
         <p className="mb-6 text-gray-600"><strong>Address:</strong> {property.address || '-'}, {property.city || '-'}</p>
         <p className="mb-6 text-gray-600"><strong>Description:</strong> {property.description || '-'}</p>
 
-        <button
-          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
-          onClick={openFormModal}
-        >
-          Get Quote
-        </button>
+        <div className="flex gap-3 mt-8">
+              <button
+                className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition"
+                onClick={openFormModal}
+              >
+                Get Quote
+              </button>
+
+              {/* Compare Button */}
+              <button
+                className={`px-6 py-2 rounded-md transition ${
+                  compareList.includes(property._id)
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-blue-600 text-white hover:bg-blue-600"
+                }`}
+                onClick={handleCompareClick} 
+              >
+                {compareList.includes(property._id) ? "Remove from Compare" : "Add to Compare"}
+              </button>
+
+              {/* Favorites Button */}
+              <button
+                className={`px-6 py-2 rounded-md transition ${
+                  favorites.includes(property._id)
+                    ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                    : "bg-gray-300 text-gray-800 hover:bg-gray-400"
+                }`}
+                onClick={() => {
+                  toggleFavorite(property._id);
+
+                  if (favorites.includes(property._id)) {
+                    toast.info(`${property.title} removed from favorites`);
+                  } else {
+                    toast.success(`${property.title} added to favorites`);
+                  }
+                }}
+              >
+                {favorites.includes(property._id) ? "★ Favorited" : "☆ Add to Favorites"}
+              </button>
+            </div>
       </div>
 
       <div className="max-w-5xl mx-auto mt-12">
         <h2 className="text-2xl font-bold mb-6">Similar Properties</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {relatedProperties.map((rp) => (
-            <PropertyCard key={rp._id} property={rp} />
+            <PropertyCard key={rp._id} 
+            property={rp} 
+            onOpenCompare={() => setShowCompareModal(true)} 
+            
+            />
           ))}
         </div>
       </div>

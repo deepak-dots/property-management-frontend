@@ -37,6 +37,8 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
       city: '',
       isActive: true,
       images: [],
+      latitude: '',
+      longitude: '',
     },
   });
 
@@ -60,6 +62,12 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
       setValue('description', initialData.description || '');
       setValue('city', initialData.city || '');
       setValue('isActive', initialData.activeStatus === 'Active');
+
+      //Pre-fill lat/lng if location exists
+      if (initialData.location && Array.isArray(initialData.location.coordinates)) {
+        setValue('longitude', initialData.location.coordinates[0] || '');
+        setValue('latitude', initialData.location.coordinates[1] || '');
+      }
 
       // Old (local uploads)
       // setExistingImages(
@@ -108,8 +116,16 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
 
       // Append all fields except images
       for (const key in data) {
-        if (key === 'images' || key === 'isActive') continue; // We'll handle images separately
+        if (key === 'images' || key === 'isActive'  || key === 'latitude' || key === 'longitude') continue; 
         formData.append(key, data[key]);
+      }
+
+       // Append location as GeoJSON Point
+       if (data.latitude && data.longitude) {
+        formData.append('location', JSON.stringify({
+          type: "Point",
+          coordinates: [parseFloat(data.longitude), parseFloat(data.latitude)]
+        }));
       }
 
       // Append isActive as activeStatus string
@@ -468,6 +484,43 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
             <span className="text-red-500 text-sm mt-1">{errors.city.message}</span>
           )}
         </div>
+
+        {/* Latitude */}
+          <div className="flex flex-col">
+            <label htmlFor="latitude" className="mb-1 font-medium">Latitude</label>
+            <input
+              id="latitude"
+              type="number"
+              step="any"
+              placeholder="Latitude"
+              {...register('latitude', {
+                required: 'Latitude is required',
+                min: { value: -90, message: 'Minimum -90' },
+                max: { value: 90, message: 'Maximum 90' }
+              })}
+              className={`py-2 px-3 border rounded ${errors.latitude ? 'border-red-500' : 'border-gray-300'}`}
+            />
+            {errors.latitude && <span className="text-red-500 text-sm mt-1">{errors.latitude.message}</span>}
+          </div>
+
+          {/* Longitude */}
+          <div className="flex flex-col">
+            <label htmlFor="longitude" className="mb-1 font-medium">Longitude</label>
+            <input
+              id="longitude"
+              type="number"
+              step="any"
+              placeholder="Longitude"
+              {...register('longitude', {
+                required: 'Longitude is required',
+                min: { value: -180, message: 'Minimum -180' },
+                max: { value: 180, message: 'Maximum 180' }
+              })}
+              className={`py-2 px-3 border rounded ${errors.longitude ? 'border-red-500' : 'border-gray-300'}`}
+            />
+            {errors.longitude && <span className="text-red-500 text-sm mt-1">{errors.longitude.message}</span>}
+          </div>
+
 
         {/* Description */}
         <div className="flex flex-col col-span-1 md:col-span-2">

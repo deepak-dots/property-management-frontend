@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from '../utils/axiosInstance';
 import PropertyCard from '../components/PropertyCard';
+import CompareModal from '../components/CompareModal';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
@@ -13,6 +14,7 @@ import 'swiper/css/navigation';
 export default function Home() {
   const [recentProperties, setRecentProperties] = useState([]);
   const [featuredProperties, setFeaturedProperties] = useState([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -76,11 +78,14 @@ export default function Home() {
         >
           {featuredProperties.map((property) => (
             <SwiperSlide key={property._id}>
-              <PropertyCard property={property} />
+              <PropertyCard
+                property={property}
+                onOpenCompare={() => setShowCompareModal(true)} // 👈 open modal from slider
+                isInSlider={true}
+              />
             </SwiperSlide>
           ))}
         </Swiper>
-
       </div>
 
       {/* Recently Added Properties - Grid */}
@@ -89,12 +94,21 @@ export default function Home() {
         {recentProperties.length === 0 && <p>Loading...</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {recentProperties.map((property) => (
-            <PropertyCard key={property._id} property={property} />
+            <PropertyCard
+              key={property._id}
+              property={property}
+              onOpenCompare={() => setShowCompareModal(true)}
+              isInSlider={false} 
+            />
           ))}
         </div>
       </div>
 
-    
+      {/* Global Compare Modal */}
+      <CompareModal
+        isOpen={showCompareModal}
+        onClose={() => setShowCompareModal(false)}
+      />
     </div>
   );
 }

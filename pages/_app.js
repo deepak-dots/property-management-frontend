@@ -1,36 +1,36 @@
-import '../styles/globals.css'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-
+// pages/_app.js
+import '../styles/globals.css';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { CompareProvider } from '../context/CompareContext';
+import { FavoritesProvider } from '../context/FavoritesContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-import App from 'next/app';
+// Import NearbyProperties component
+import NearbyProperties from '../components/NearbyProperties';
 
 function MyApp({ Component, pageProps }) {
   return (
-    <>
-      <Header />
-      <Component {...pageProps} />
-      <Footer />
-    </>
+    <CompareProvider>
+      <FavoritesProvider>
+        <Header />
+
+        {/* Nearby properties globally */}
+        {/* <NearbyProperties /> */}
+
+        <Component {...pageProps} />
+        <Footer />
+        <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
+      </FavoritesProvider>
+    </CompareProvider>
   );
 }
 
-// Add getInitialProps safely
-MyApp.getInitialProps = async (appContext) => {
-  // Get initial props of App (to preserve Next.js behavior)
-  const appProps = await App.getInitialProps(appContext);
-
-  let pageProps = {};
-
-  // Call page's getInitialProps if it exists
-  if (appContext.Component.getInitialProps) {
-    pageProps = await appContext.Component.getInitialProps(appContext.ctx);
-  }
-
-  return { ...appProps, pageProps };
-};
-
 export default MyApp;
+
+
+

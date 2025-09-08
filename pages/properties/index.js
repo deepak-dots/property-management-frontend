@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import axios from '../../utils/axiosInstance';
 import PropertyCard from '../../components/PropertyCard';
 import PropertyFilters from '../../components/PropertyFilter';
+import CompareModal from '../../components/CompareModal';
 
 export default function Properties() {
   const [properties, setProperties] = useState([]);
@@ -29,6 +30,8 @@ export default function Properties() {
     priceMin: 0,
     priceMax: 1000000,
   });
+
+  const [showCompareModal, setShowCompareModal] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -186,7 +189,10 @@ export default function Properties() {
               <p className="text-center col-span-full text-gray-500">No properties found.</p>
             ) : (
               properties.map((property) => (
-                <PropertyCard key={property._id} property={property} />
+                <PropertyCard key={property._id} 
+                  property={property}   
+                  onOpenCompare={() => setShowCompareModal(true)} 
+                />
               ))
             )}
           </div>
@@ -216,6 +222,13 @@ export default function Properties() {
           </div>
         )}
       </div>
+
+       {/* Global Compare Modal */}
+        <CompareModal
+          isOpen={showCompareModal}
+          onClose={() => setShowCompareModal(false)}
+        />
+
     </div>
   );
 }

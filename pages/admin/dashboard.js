@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import axios from '../../utils/axiosInstance';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import SearchBar from '../../components/SearchBar';
+import AdminSearchBar from '../../components/AdminSearchBar';
 import AdminSidebar from '../../components/AdminSidebar';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -272,7 +272,7 @@ export default function AdminDashboard() {
 
           {/* Search bar */}
           <div className="mb-4">
-            <SearchBar
+            <AdminSearchBar
               initialSearch={searchQuery}
               onSearch={handleSearch}
               onSearchChange={handleSearchChange}

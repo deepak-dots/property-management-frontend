@@ -11,8 +11,15 @@ import FilterBar from './FilterBar';
 export default function Header() {
   const router = useRouter();
 
+  
+  // Fallback coordinates for nearest properties
+  const fallbackLat = 26.8594;
+  const fallbackLng = 75.8328;
+
+  const [coordsAllowed, setCoordsAllowed] = useState(true);
+
   // Selected filter states
-  const [propertyType, setPropertyType] = useState(''); // selected value
+  const [propertyType, setPropertyType] = useState('');
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
   const [bhkType, setBhkType] = useState('');
@@ -21,7 +28,7 @@ export default function Header() {
   const [status, setStatus] = useState('');
 
   // Filter option lists
-  const [propertyTypes, setPropertyTypes] = useState([]); // options array
+  const [propertyTypes, setPropertyTypes] = useState([]);
   const [cities, setCities] = useState([]);
   const [bhkTypes, setBhkTypes] = useState([]);
   const [furnishings, setFurnishings] = useState([]);
@@ -54,14 +61,13 @@ export default function Header() {
     updateLoginStatus();
     window.addEventListener('login', updateLoginStatus);
     window.addEventListener('logout', updateLoginStatus);
-
     return () => {
       window.removeEventListener('login', updateLoginStatus);
       window.removeEventListener('logout', updateLoginStatus);
     };
   }, []);
 
-  // Fetch properties to build filter options
+  // Fetch filter options from properties
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -111,12 +117,6 @@ export default function Header() {
       })
       .catch(() => {
         setError('Failed to load filter options.');
-        setPropertyTypes([]);
-        setCities([]);
-        setBhkTypes([]);
-        setFurnishings([]);
-        setTransactionTypes([]);
-        setStatuses([]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -124,17 +124,13 @@ export default function Header() {
   // Update search in URL
   const handleSearch = (searchValue) => {
     setSearch(searchValue);
-
-    const query = {
-      ...router.query,
-      search: searchValue || undefined,
-      page: undefined,
-    };
-
-    router.push({ pathname: '/properties', query });
+    router.push({
+      pathname: '/properties',
+      query: { ...router.query, search: searchValue || undefined, page: undefined },
+    });
   };
 
-  // Update filters
+  // Update filters in URL
   const handleFilter = ({
     propertyType: newPropertyType = '',
     city: newCity = '',
@@ -150,18 +146,19 @@ export default function Header() {
     setTransactionType(newTransactionType);
     setStatus(newStatus);
 
-    const query = {
-      ...router.query,
-      propertyType: newPropertyType || undefined,
-      city: newCity || undefined,
-      bhkType: newBhkType || undefined,
-      furnishing: newFurnishing || undefined,
-      transactionType: newTransactionType || undefined,
-      status: newStatus || undefined,
-      page: undefined,
-    };
-
-    router.push({ pathname: '/properties', query });
+    router.push({
+      pathname: '/properties',
+      query: {
+        ...router.query,
+        propertyType: newPropertyType || undefined,
+        city: newCity || undefined,
+        bhkType: newBhkType || undefined,
+        furnishing: newFurnishing || undefined,
+        transactionType: newTransactionType || undefined,
+        status: newStatus || undefined,
+        page: undefined,
+      },
+    });
   };
 
   const handleLogout = () => {
@@ -170,11 +167,30 @@ export default function Header() {
     router.push('/');
   };
 
+   // Detect if geolocation is allowed
+   useEffect(() => {
+    if (!navigator.geolocation) {
+      setCoordsAllowed(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      () => setCoordsAllowed(true),
+      () => setCoordsAllowed(false)
+    );
+  }, []);
+
+  const handleShowNearest = () => {
+    router.push(`/properties/nearby?lat=${fallbackLat}&lng=${fallbackLng}`);
+  };
+
+
   return (
-    <header className="bg-black shadow-md py-4 px-4 sm:px-8">
-      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Logo */}
-        <div className="flex-shrink-0">
+    <header className="w-full">
+      {/* Top Bar */}
+      <div className="bg-black text-white py-3 px-4 sm:px-8 shadow-md">
+        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between">
+          {/* Logo */}
           <Link href="/">
             <img
               src="https://www.dotsquares.com/assets/dots-logo.svg"
@@ -182,51 +198,80 @@ export default function Header() {
               className="h-10 w-auto"
             />
           </Link>
+    
+          {/* Navigation */}
+          <nav className="flex flex-wrap justify-center md:justify-end gap-4 mt-2 md:mt-0">
+          
+            {coordsAllowed ? (
+              <button
+                onClick={handleShowNearest}
+                className="hover:text-yellow-300 font-medium"
+              >
+                Nearby
+              </button>
+            ) : (
+              <Link
+                href={`/properties/nearby?lat=${fallbackLat}&lng=${fallbackLng}`}
+                className="hover:text-yellow-300 font-medium"
+              >
+                Nearby
+              </Link>
+            )}
+            <Link href="/properties" className="hover:text-yellow-300 font-medium">
+              Properties
+            </Link>
+            <Link href="/properties/compare" className="hover:text-yellow-300 font-medium">
+              Compare
+            </Link>
+            <Link href="/properties/favorites" className="hover:text-yellow-300 font-medium">
+            Favorites
+            </Link>
+            {isLoggedIn ? (
+              <Link href="/admin/dashboard" className="hover:text-yellow-300 font-medium">
+                Dashboard
+              </Link>
+            ) : (
+              <Link href="/admin/login" className="hover:text-yellow-300 font-medium">
+                Admin Login
+              </Link>
+            )}
+            
+          </nav>
         </div>
-
-        {/* Search bar */}
-        <div className="flex-grow w-full md:max-w-3xl">
+      </div>
+    
+      {/* Search Bar */}
+      <div className="bg-white py-4 px-4 sm:px-8 border-b shadow-sm">
+        <div className="max-w-screen-xl mx-auto">
           <SearchBar initialSearch={search} onSearch={handleSearch} />
         </div>
-
-        {/* Navigation */}
-        <nav className="flex flex-wrap justify-center md:justify-end gap-3 text-white font-medium">
-          <Link href="/properties" className="hover:text-blue-400">
-            Properties
-          </Link>
-
-          {isLoggedIn ? (
-            <Link href="/admin/dashboard" className="hover:text-blue-400">
-              Dashboard
-            </Link>
-          ) : (
-            <Link href="/admin/login" className="hover:text-blue-400">
-              Admin Login
-            </Link>
-          )}
-        </nav>
       </div>
-
-      {/* Filters */}
-      <div className="max-w-screen-xl mx-auto mt-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-2 sm:px-0">
-        <FilterBar
-          initialPropertyType={propertyType} // selected value
-          initialCity={city}
-          initialBhkType={bhkType}
-          initialFurnishing={furnishing}
-          initialTransactionType={transactionType}
-          initialStatus={status}
-          propertyTypes={propertyTypes} // options array
-          cities={cities}
-          bhkTypes={bhkTypes}
-          furnishings={furnishings}
-          transactionTypes={transactionTypes}
-          statuses={statuses}
-          onFilter={handleFilter}
-          loading={loading}
-        />
-        {error && <p className="text-red-500 text-sm mt-2 md:mt-0">{error}</p>}
+    
+      {/* Filter Bar */}
+      <div className="bg-black py-3 px-4 sm:px-8 border-b">
+        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center gap-4">
+          <FilterBar
+            initialPropertyType={propertyType}
+            initialCity={city}
+            initialBhkType={bhkType}
+            initialFurnishing={furnishing}
+            initialTransactionType={transactionType}
+            initialStatus={status}
+            propertyTypes={propertyTypes}
+            cities={cities}
+            bhkTypes={bhkTypes}
+            furnishings={furnishings}
+            transactionTypes={transactionTypes}
+            statuses={statuses}
+            onFilter={handleFilter}
+            loading={loading}
+            coordsAllowed={coordsAllowed}   
+            handleShowNearest={handleShowNearest}
+          />
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+        </div>
       </div>
     </header>
+  
   );
 }
