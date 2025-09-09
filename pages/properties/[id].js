@@ -42,6 +42,21 @@ const PropertyDetail = () => {
     setShowCompareModal(true); // open modal after toggling
   };
 
+  // Opens Google Maps
+  const handleViewLocationClick = () => {
+    const lat = property.location?.coordinates?.[1];
+    const lng = property.location?.coordinates?.[0];
+
+    if (!lat || !lng) {
+      toast.error('Location not available for this property');
+      return;
+    }
+
+    const url = `https://www.google.com/maps?q=${lat},${lng}`;
+    window.open(url, '_blank');
+  };
+
+
 
   useEffect(() => {
     Modal.setAppElement('#__next');
@@ -275,6 +290,16 @@ const PropertyDetail = () => {
               >
                 {favorites.includes(property._id) ? "★ Favorited" : "☆ Add to Favorites"}
               </button>
+
+              {property.location?.coordinates?.length === 2 && (
+                <button
+                  className="px-6 py-2 rounded-md text-white bg-green-500 hover:bg-green-600 transition"
+                  onClick={handleViewLocationClick}
+                >
+                  View Location
+                </button>
+              )}
+
             </div>
       </div>
 
