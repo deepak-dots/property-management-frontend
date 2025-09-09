@@ -113,34 +113,27 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
   const onSubmit = async (data) => {
     try {
       const formData = new FormData();
-
+  
       // Append all fields except images
       for (const key in data) {
-        if (key === 'images' || key === 'isActive'  || key === 'latitude' || key === 'longitude') continue; 
+        if (key === 'images' || key === 'isActive') continue; 
         formData.append(key, data[key]);
       }
-
-       // Append location as GeoJSON Point
-       if (data.latitude && data.longitude) {
-        formData.append('location', JSON.stringify({
-          type: "Point",
-          coordinates: [parseFloat(data.longitude), parseFloat(data.latitude)]
-        }));
-      }
-
+  
+      // Append lat/lng for backend
+      if (data.latitude) formData.append('lat', data.latitude);
+      if (data.longitude) formData.append('lng', data.longitude);
+  
       // Append isActive as activeStatus string
       formData.append('activeStatus', data.isActive ? 'Active' : 'Draft');
-
+  
       // Append new images files
       newImages.forEach(file => formData.append('images', file));
-
-
-      // Append existing images URLs
+  
+      // Append existing and removed images
       formData.append('existingImages', JSON.stringify(existingImages));
-
-      // Append removed images URLs
       formData.append('removedImages', JSON.stringify(removedImages)); 
-
+  
       if (isEdit && initialData._id) {
         await axios.put(`/properties/${initialData._id}`, formData);
         alert('Property updated!');
@@ -148,17 +141,15 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
         await axios.post('/properties', formData);
         alert('Property created!');
       }
-
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push('/admin/dashboard');
-      }
+  
+      if (onSuccess) onSuccess();
+      else router.push('/admin/dashboard');
     } catch (err) {
       alert('Something went wrong.');
       console.error(err);
     }
   };
+  
 
   return (
     <div className="max-w-3xl mx-auto bg-white shadow p-6 rounded-lg space-y-4">
