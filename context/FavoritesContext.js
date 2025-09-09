@@ -5,37 +5,35 @@ const FavoritesContext = createContext();
 export const FavoritesProvider = ({ children }) => {
   const [favorites, setFavorites] = useState([]);
 
-  // Load from localStorage
+  // Load from localStorage on first mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const saved = localStorage.getItem('favorites');
-    if (saved) setFavorites(JSON.parse(saved));
+    if (saved) {
+      setFavorites(JSON.parse(saved)); // load full objects
+    }
   }, []);
 
-  // Persist to localStorage
+  // Save whenever favorites change
   useEffect(() => {
     if (typeof window === 'undefined') return;
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // Add / remove toggle
-  const toggleFavorite = (id) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+  // Toggle favorite by full property object
+  const toggleFavorite = (property) => {
+    setFavorites((prev) => {
+      const exists = prev.find((p) => p._id === property._id);
+      if (exists) return prev.filter((p) => p._id !== property._id);
+      return [...prev, property];
+    });
   };
 
-  // Clear all
-  const clearFavorites = () => setFavorites([]);
-
   return (
-    <FavoritesContext.Provider
-      value={{ favorites, toggleFavorite, clearFavorites }}
-    >
+    <FavoritesContext.Provider value={{ favorites, toggleFavorite }}>
       {children}
     </FavoritesContext.Provider>
   );
 };
 
-// Hook to use favorites
 export const useFavorites = () => useContext(FavoritesContext);

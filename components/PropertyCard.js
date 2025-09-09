@@ -13,10 +13,12 @@ export default function PropertyCard({ property, onOpenCompare }) {
   const getImageUrl = (img) =>
     img?.startsWith('http') ? img : `${API_URL}/uploads/${img}`;
 
+  // Handle favorite with toast
   const handleFavoriteClick = (e) => {
     e.stopPropagation();
-    const alreadyFavorited = favorites.includes(property._id);
-    toggleFavorite(property._id);
+
+    const alreadyFavorited = favorites.some((p) => p._id === property._id);
+    toggleFavorite(property); // Pass full object to context
 
     if (alreadyFavorited) {
       toast.info(`${property.title} removed from favorites`);
@@ -29,7 +31,6 @@ export default function PropertyCard({ property, onOpenCompare }) {
     e.stopPropagation();
     toggleCompare(property._id);
 
-    // 👇 Har jagah modal kholne ke liye
     if (onOpenCompare) {
       onOpenCompare();
     }
@@ -111,14 +112,14 @@ export default function PropertyCard({ property, onOpenCompare }) {
 
           {/* Favorite Button */}
           <button
-            onClick={handleFavoriteClick}
+            onClick={handleFavoriteClick} // ✅ Fixed here
             className={`mt-2 px-3 py-1 rounded text-sm font-medium transition ${
-              favorites.includes(property._id)
+              favorites.some((p) => p._id === property._id)
                 ? 'bg-yellow-500 text-white hover:bg-yellow-600'
                 : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
             }`}
           >
-            {favorites.includes(property._id)
+            {favorites.some((p) => p._id === property._id)
               ? '★ Favorited'
               : '☆ Add to Favorites'}
           </button>
