@@ -7,6 +7,30 @@ import ActionDropdown from './ActionDropdown';
 // const baseURL = `${API_URL}/uploads/`;  // ❌ Not needed anymore with Cloudinary
 
 const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
+
+
+  // Detect user location
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setValue('latitude', latitude);
+        setValue('longitude', longitude);
+        alert(`Location detected!\nLatitude: ${latitude}\nLongitude: ${longitude}`);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Unable to retrieve your location. Please allow location access.");
+      }
+    );
+  };
+
+
   const router = useRouter();
   const [existingImages, setExistingImages] = useState([]);
   const [removedImages, setRemovedImages] = useState([]);  
@@ -475,6 +499,17 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
             <span className="text-red-500 text-sm mt-1">{errors.city.message}</span>
           )}
         </div>
+
+        <div className="flex flex-col">
+          <button
+            type="button"
+            onClick={detectLocation}
+            className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+          >
+            Detect Current Location
+          </button>
+        </div>
+
 
         {/* Latitude */}
           <div className="flex flex-col">
