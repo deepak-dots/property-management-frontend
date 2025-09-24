@@ -1,242 +1,74 @@
-import { useEffect, useState, useRef } from 'react';
-import axios from '../../utils/axiosInstance';
+'use client';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import axios from '../../utils/axiosInstance';
+import UserLayout from '../../components/UserLayout';
+import { HomeIcon, UserIcon, PencilIcon, HeartIcon, ChatBubbleLeftEllipsisIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 
 
-function ConfirmationModal({
-  isOpen,
-  title,
-  message,
-  onConfirm,
-  onCancel,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  isNotification = false, // new flag to show simple message modal
-  onCloseNotification,    // callback to close notification modal
-}) {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-      <div className="bg-white rounded p-6 max-w-sm w-full shadow-lg">
-        {title && <h2 className="text-xl font-semibold mb-4">{title}</h2>}
-        <p className="mb-6">{message}</p>
-
-        {isNotification ? (
-          <div className="flex justify-end">
-            <button
-              onClick={onCloseNotification}
-              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Close
-            </button>
-          </div>
-        ) : (
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={onCancel}
-              className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100"
-            >
-              {cancelText}
-            </button>
-            <button
-              onClick={onConfirm}
-              className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-            >
-              {confirmText}
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default function AdminDashboard() {
+export default function UserDashboard() {
   const router = useRouter();
+  const [user, setUser] = useState(null);
 
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const debounceTimeout = useRef(null);
+  const token = () => localStorage.getItem('userToken');
 
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 9;
-
-  // Modal state for confirmation
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalAction, setModalAction] = useState(null); // 'delete' or 'duplicate'
-  const [selectedPropertyId, setSelectedPropertyId] = useState(null);
-
-  // Modal state for notification messages
-  const [notificationOpen, setNotificationOpen] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState('');
-  const [notificationTitle, setNotificationTitle] = useState('');
-
-  // Fetch properties with optional search param, pagination
-  const fetchProperties = async (search = '', page = 1, limit = 9) => {
+  const fetchProfile = async () => {
+    if (!token()) return router.push('/user/login');
     try {
-      setLoading(true);
-      const token = localStorage.getItem('userToken');
-      if (!token) {
-        router.push('/admin/login');
-        return;
-      }
-
-      const res = await axios.get('/properties', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          search,
-          page,
-          limit,
-        },
+      const res = await axios.get('/user/dashboard', {
+        headers: { Authorization: `Bearer ${token()}` },
       });
-
-      if (Array.isArray(res.data.properties)) {
-        setProperties(res.data.properties);
-      } else if (Array.isArray(res.data)) {
-        setProperties(res.data);
-      } else {
-        setProperties([]);
-      }
-
-      // Set total pages or calculate it from totalCount
-      if (res.data.totalPages) {
-        setTotalPages(res.data.totalPages);
-      } else if (res.data.totalCount) {
-        setTotalPages(Math.ceil(res.data.totalCount / limit));
-      } else {
-        setTotalPages(1); // fallback
-      }
-    } catch (err) {
-      openNotification('Error', 'Failed to fetch properties');
-      console.error(err);
-      setProperties([]);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
+      setUser(res.data);
+    } catch {
+      localStorage.removeItem('userToken');
+      router.push('/user/login');
     }
-  };
-
-  const handleSearch = (search) => {
-    setSearchQuery(search);
-    setCurrentPage(1);
-    fetchProperties(search, 1, itemsPerPage);
-  };
-
-  const handleSearchChange = (search) => {
-    setSearchQuery(search);
-    setCurrentPage(1);
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-    debounceTimeout.current = setTimeout(() => {
-      fetchProperties(search, 1, itemsPerPage);
-    }, 500);
   };
 
   useEffect(() => {
-    fetchProperties(searchQuery, currentPage, itemsPerPage);
-  }, [searchQuery, currentPage]);
-
-  const openModal = (action, propertyId) => {
-    setModalAction(action);
-    setSelectedPropertyId(propertyId);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setModalAction(null);
-    setSelectedPropertyId(null);
-  };
-
-  const openNotification = (title, message) => {
-    setNotificationTitle(title);
-    setNotificationMessage(message);
-    setNotificationOpen(true);
-  };
-
-  const closeNotification = () => {
-    setNotificationOpen(false);
-    setNotificationTitle('');
-    setNotificationMessage('');
-  };
-
-  const confirmModalAction = async () => {
-    if (!selectedPropertyId || !modalAction) return;
-
-    const token = localStorage.getItem('userToken');
-    if (!token) {
-      router.push('/user/login');
-      return;
-    }
-
-    try {
-      if (modalAction === 'delete') {
-        await axios.delete(`/properties/${selectedPropertyId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        openNotification('Success', 'Property deleted successfully!');
-      } else if (modalAction === 'duplicate') {
-        await axios.post(
-          `/properties/${selectedPropertyId}/duplicate`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        openNotification('Success', 'Property duplicated successfully!');
-      }
-      fetchProperties(searchQuery, currentPage, itemsPerPage);
-    } catch (err) {
-      openNotification(
-        'Error',
-        modalAction === 'delete'
-          ? 'Failed to delete'
-          : 'Failed to duplicate property'
-      );
-      console.error(err);
-    } finally {
-      closeModal();
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('userToken');
-    window.dispatchEvent(new Event('logout')); 
-    router.push('/admin/login');
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 text-xl">
-        Loading properties...
-      </div>
-    );
-  }
+    fetchProfile();
+  }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <UserLayout userName={user?.name}>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
+      <p className="text-gray-600 mb-6">
+        Welcome, <span className="font-medium">{user?.name}</span>
+      </p>
 
-       
-        <main className="flex-1 p-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {/* My Profile */}
+        <div className="bg-white shadow rounded-lg p-6 flex items-center space-x-4">
+          <UserIcon className="h-12 w-12 text-green-500" />
+          <button onClick={() => router.push('/user/profile')}>
+            <h3 className="text-lg font-semibold text-gray-700">My Profile</h3>
+          </button>
+        </div>
 
-          <div className="max-w-7xl mx-auto bg-white shadow-md rounded-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-gray-800">User Dashboard</h1>
+        {/* Edit Profile */}
+        <div className="bg-white shadow rounded-lg p-6 flex items-center space-x-4">
+          <PencilIcon className="h-12 w-12 text-blue-500" />
+          <button onClick={() => router.push('/user/profile/edit')}>
+            <h3 className="text-lg font-semibold text-gray-700">Edit Profile</h3>
+          </button>
+        </div>
 
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </main>
-    </div>
+        {/* Example additional card */}
+        <div className="bg-white shadow rounded-lg p-6 flex items-center space-x-4">
+          <HeartIcon className="h-12 w-12 text-yellow-500" />
+          <button onClick={() => router.push('/user/favorites')}>
+            <h3 className="text-lg font-semibold text-gray-700">My Favorites</h3>
+          </button>
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-6 flex items-center space-x-4">
+          <ChatBubbleLeftEllipsisIcon className="h-12 w-12 text-yellow-500" />
+          <button onClick={() => router.push('/user/enquiries')}>
+            <h3 className="text-lg font-semibold text-gray-700">My Enquiries</h3>
+          </button>
+        </div>
+
+      </div>
+    </UserLayout>
   );
 }
