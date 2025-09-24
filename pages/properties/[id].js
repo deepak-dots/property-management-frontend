@@ -14,6 +14,8 @@ import { useCompare } from "../../context/CompareContext";
 import CompareModal from '../../components/CompareModal'; 
 import { useFavorites } from '../../context/FavoritesContext';
 import { toast } from 'react-toastify';
+import { ArrowsRightLeftIcon, XMarkIcon, HeartIcon, MapPinIcon } from '@heroicons/react/24/outline';
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -208,37 +210,103 @@ const PropertyDetail = () => {
             Get Quote
           </button>
 
-          {/* Compare Button */}
-          <button
-            className={`px-6 py-2 rounded-md transition ${
-              compareList.includes(property._id)
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : "bg-blue-600 text-white hover:bg-blue-600"
-            }`}
-            onClick={handleCompareClick} 
-          >
-            {compareList.includes(property._id) ? "Remove from Compare" : "Add to Compare"}
-          </button>
+            {/* Compare Button */}
+            <button
+              onClick={handleCompareClick}
+              className={`relative group px-3 py-2 rounded-md transition flex items-center justify-center ${
+                compareList.includes(property._id)
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
+              >
+              {compareList.includes(property._id) ? (
+                <XMarkIcon className="h-5 w-5" />
+              ) : (
+                <ArrowsRightLeftIcon className="h-5 w-5" />
+              )}
+
+              {/* Tooltip */}
+              <span
+                className="absolute bottom-full mb-2 hidden group-hover:flex px-2 py-1 text-xs rounded bg-gray-800 text-white whitespace-nowrap"
+              >
+                {compareList.includes(property._id) ? "Remove from Compare" : "Add to Compare"}
+              </span>
+            </button>
 
           {/* Favorites Button */}
           <button
-            className={`px-6 py-2 rounded-md transition ${
-              favorites.includes(property._id)
-                ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                : "bg-gray-300 text-gray-800 hover:bg-gray-400"
-            }`}
-            onClick={() => {
-              toggleFavorite(property._id);
-
-              if (favorites.includes(property._id)) {
-                toast.info(`${property.title} removed from favorites`);
-              } else {
-                toast.success(`${property.title} added to favorites`);
+            onClick={async () => {
+              try {
+                const isNowFavorited = await toggleFavorite(property); // ✅ pass full object
+                if (isNowFavorited) {
+                  toast.success(`${property.title} added to favorites`);
+                } else {
+                  toast.info(`${property.title} removed from favorites`);
+                }
+              } catch (err) {
+                console.error("Toggle favorite error:", err);
+                toast.error("Failed to update favorite");
               }
             }}
+            className="relative group px-3 py-2 rounded-md transition flex items-center justify-center
+              bg-yellow-500 text-white hover:bg-yellow-600"
           >
-            {favorites.includes(property._id) ? "★ Favorited" : "☆ Add to Favorites"}
+            {/* Heart Icon */}
+            <HeartIcon
+              className={`h-6 w-6 ${
+                favorites.some((fav) => fav._id === property._id)
+                  ? "fill-current text-white"
+                  : ""
+              }`}
+            />
+
+            {/* Tooltip */}
+            <span
+              className="absolute bottom-full mb-2 hidden group-hover:flex px-2 py-1 text-xs rounded bg-gray-800 text-white whitespace-nowrap"
+            >
+              {favorites.some((fav) => fav._id === property._id)
+                ? "Remove from Favorites"
+                : "Add to Favorites"}
+            </span>
           </button>
+
+
+          {property.location?.coordinates?.length === 2 && (
+                <button
+                  onClick={handleViewLocationClick}
+                  className="relative group px-3 py-2 rounded-md flex items-center justify-center 
+                    bg-green-500 text-white hover:bg-green-600 transition"
+                >
+                  {/* Location Icon */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="h-6 w-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 21c-4.5-4.5-7.5-8.25-7.5-12A7.5 7.5 0 1119.5 9c0 3.75-3 7.5-7.5 12z"
+                    />
+                    <circle cx="12" cy="9" r="2.5" fill="currentColor" />
+                  </svg>
+
+                  {/* Tooltip */}
+                  <span
+                    className="absolute bottom-full mb-2 hidden group-hover:flex px-2 py-1 text-xs rounded 
+                      bg-gray-800 text-white whitespace-nowrap"
+                  >
+                    View Location
+                  </span>
+                </button>
+              )}
+
+
+
+
         </div>
       </div>
 
@@ -261,44 +329,100 @@ const PropertyDetail = () => {
 
               {/* Compare Button */}
               <button
-                className={`px-6 py-2 rounded-md transition ${
+                onClick={handleCompareClick}
+                className={`relative group px-3 py-2 rounded-md transition flex items-center justify-center ${
                   compareList.includes(property._id)
                     ? "bg-red-500 text-white hover:bg-red-600"
-                    : "bg-blue-600 text-white hover:bg-blue-600"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
-                onClick={handleCompareClick} 
               >
-                {compareList.includes(property._id) ? "Remove from Compare" : "Add to Compare"}
+                {compareList.includes(property._id) ? (
+                  <XMarkIcon className="h-5 w-5" />
+                ) : (
+                  <ArrowsRightLeftIcon className="h-5 w-5" />
+                )}
+
+                {/* Tooltip */}
+                <span
+                  className="absolute bottom-full mb-2 hidden group-hover:flex px-2 py-1 text-xs rounded bg-gray-800 text-white whitespace-nowrap"
+                >
+                  {compareList.includes(property._id) ? "Remove from Compare" : "Add to Compare"}
+                </span>
               </button>
+
+
 
               {/* Favorites Button */}
               <button
-                className={`px-6 py-2 rounded-md transition ${
-                  favorites.includes(property._id)
-                    ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                    : "bg-gray-300 text-gray-800 hover:bg-gray-400"
-                }`}
-                onClick={() => {
-                  toggleFavorite(property._id);
-
-                  if (favorites.includes(property._id)) {
-                    toast.info(`${property.title} removed from favorites`);
-                  } else {
-                    toast.success(`${property.title} added to favorites`);
+                onClick={async () => {
+                  try {
+                    const isNowFavorited = await toggleFavorite(property); // ✅ pass full object
+                    if (isNowFavorited) {
+                      toast.success(`${property.title} added to favorites`);
+                    } else {
+                      toast.info(`${property.title} removed from favorites`);
+                    }
+                  } catch (err) {
+                    console.error("Toggle favorite error:", err);
+                    toast.error("Failed to update favorite");
                   }
                 }}
+                className="relative group px-3 py-2 rounded-md transition flex items-center justify-center
+                  bg-yellow-500 text-white hover:bg-yellow-600"
               >
-                {favorites.includes(property._id) ? "★ Favorited" : "☆ Add to Favorites"}
+                {/* Heart Icon */}
+                <HeartIcon
+                  className={`h-6 w-6 ${
+                    favorites.some((fav) => fav._id === property._id)
+                      ? "fill-current text-white"
+                      : ""
+                  }`}
+                />
+
+                {/* Tooltip */}
+                <span
+                  className="absolute bottom-full mb-2 hidden group-hover:flex px-2 py-1 text-xs rounded bg-gray-800 text-white whitespace-nowrap"
+                >
+                  {favorites.some((fav) => fav._id === property._id)
+                    ? "Remove from Favorites"
+                    : "Add to Favorites"}
+                </span>
               </button>
+
 
               {property.location?.coordinates?.length === 2 && (
                 <button
-                  className="px-6 py-2 rounded-md text-white bg-green-500 hover:bg-green-600 transition"
                   onClick={handleViewLocationClick}
+                  className="relative group px-3 py-2 rounded-md flex items-center justify-center 
+                    bg-green-500 text-white hover:bg-green-600 transition"
                 >
-                  View Location
+                  {/* Location Icon */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="h-6 w-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 21c-4.5-4.5-7.5-8.25-7.5-12A7.5 7.5 0 1119.5 9c0 3.75-3 7.5-7.5 12z"
+                    />
+                    <circle cx="12" cy="9" r="2.5" fill="currentColor" />
+                  </svg>
+
+                  {/* Tooltip */}
+                  <span
+                    className="absolute bottom-full mb-2 hidden group-hover:flex px-2 py-1 text-xs rounded 
+                      bg-gray-800 text-white whitespace-nowrap"
+                  >
+                    View Location
+                  </span>
                 </button>
               )}
+
 
             </div>
       </div>
