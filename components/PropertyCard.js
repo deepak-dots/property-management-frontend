@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useCompare } from '../context/CompareContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { toast } from 'react-toastify';
+import { ArrowsRightLeftIcon, XMarkIcon, HeartIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -10,20 +11,34 @@ export default function PropertyCard({ property, onOpenCompare }) {
   const router = useRouter();
   const { compareList, toggleCompare } = useCompare();
   const { favorites, toggleFavorite } = useFavorites();
+  const isFavorited = favorites.some(fav => fav._id === property._id);
 
   const getImageUrl = (img) =>
     img?.startsWith('http') ? img : `${API_URL}/uploads/${img}`;
 
-  // Favorite button
-  const handleFavoriteClick = (e) => {
-    e.stopPropagation();
-    const alreadyFavorited = favorites.some((p) => p._id === property._id);
-    toggleFavorite(property);
+  // Favorite button  
+const handleFavoriteClick = async (e) => {
+  e.stopPropagation();
+  console.log('Toggling favorite for property ID:', property._id);
+  try {
+    // pass full property object so guest flow can store full object in localStorage
+    const isNowFavorited = await toggleFavorite(property); // returns boolean
 
-    toast[alreadyFavorited ? 'info' : 'success'](
-      `${property.title} ${alreadyFavorited ? 'removed from' : 'added to'} favorites`
-    );
-  };
+    // Show success toast based on result
+    // if (isNowFavorited) {
+    //   toast.success(`${property.title} added to favorites`);
+    // } else {
+    //   toast.success(`${property.title} removed from favorites`);
+    // }
+  } catch (err) {
+    console.error('Toggle favorite error:', err.response?.data || err.message);
+    // toggleFavorite already shows toast for guest/server errors; still show fallback
+    toast.error('Failed to update favorite');
+  }
+};
+
+  
+  
 
   // Compare button
   const handleCompareClick = (e) => {
@@ -100,42 +115,46 @@ export default function PropertyCard({ property, onOpenCompare }) {
           </p>
         )}
 
+
         <div className="flex gap-3 mt-4 flex-wrap justify-center">
           {/* Compare Button */}
           <button
             onClick={handleCompareClick}
-            className={`px-3 py-1 rounded text-sm font-medium transition ${
+            className={`px-3 py-1 rounded text-sm font-medium transition flex items-center gap-1 ${
               compareList.includes(property._id)
                 ? 'bg-red-500 text-white hover:bg-red-600'
                 : 'bg-blue-500 text-white hover:bg-blue-600'
             }`}
           >
-            {compareList.includes(property._id) ? 'Remove from Compare' : 'Add to Compare'}
+            {compareList.includes(property._id) ? (
+              <XMarkIcon className="h-5 w-5" />
+            ) : (
+              <ArrowsRightLeftIcon className="h-5 w-5" />
+            )}
           </button>
 
           {/* Favorite Button */}
           <button
             onClick={handleFavoriteClick}
-            className={`px-3 py-1 rounded text-sm font-medium transition ${
-              favorites.some((p) => p._id === property._id)
-                ? 'bg-yellow-500 text-white hover:bg-yellow-600'
-                : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-            }`}
+            className="px-3 py-1 rounded text-sm font-medium bg-yellow-500 text-white hover:bg-yellow-600 transition flex items-center gap-1"
           >
-            {favorites.some((p) => p._id === property._id) ? '★ Favorited' : '☆ Add to Favorites'}
+            <HeartIcon
+              className={`h-5 w-5 ${isFavorited ? 'fill-current text-white' : ''}`}
+            />
           </button>
 
           {/* View Location Button */}
           {property.location?.coordinates?.length === 2 && (
             <button
-              className="px-6 py-2 rounded-md text-white bg-green-500 hover:bg-green-600 transition"
+              className="px-3 py-2 rounded-md text-white bg-green-500 hover:bg-green-600 transition flex items-center gap-1"
               onClick={handleViewLocationClick}
             >
-              View Location
+              <MapPinIcon className="h-5 w-5" />
             </button>
           )}
-
         </div>
+
+
       </div>
     </div>
   );
