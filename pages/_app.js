@@ -2,35 +2,33 @@
 import '../styles/globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useRouter } from 'next/router';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { CompareProvider } from '../context/CompareContext';
+import { AuthProvider } from '../context/AuthContext';
 import { FavoritesProvider } from '../context/FavoritesContext';
+import { CompareProvider } from '../context/CompareContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Import NearbyProperties component
-import NearbyProperties from '../components/NearbyProperties';
-
 function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+  const hideHeaderFooter = [];
+  const shouldHide = hideHeaderFooter.includes(router.pathname);
+
   return (
-    <CompareProvider>
+    <AuthProvider>
       <FavoritesProvider>
-        <Header />
-
-        {/* Nearby properties globally */}
-        {/* <NearbyProperties /> */}
-
-        <Component {...pageProps} />
-        <Footer />
-        <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
+        <CompareProvider>
+          {!shouldHide && <Header />}
+          <Component {...pageProps} />
+          {!shouldHide && <Footer />}
+          <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
+        </CompareProvider>
       </FavoritesProvider>
-    </CompareProvider>
+    </AuthProvider>
   );
 }
 
 export default MyApp;
-
-
-
