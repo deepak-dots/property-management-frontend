@@ -16,7 +16,7 @@ export default function LoginForm() {
   const onSubmit = async (data) => {
     try {
       // Make API call
-      const res = await axios.post('/auth/login', data);
+      const res = await axios.post('/admin/login', data);
 
       // Check if token exists before setting
       if (res.data && res.data.token) {
