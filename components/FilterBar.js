@@ -142,16 +142,6 @@ export default function FilterBar({
           Find Properties
         </button>
 
-         {/* Nearby button */}
-    
-         <button
-          type="button" // important to prevent form submission
-          onClick={handleShowNearest}
-          className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
-        >
-          Nearby
-        </button>
-
         
       </form>
 

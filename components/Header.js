@@ -38,6 +38,8 @@ export default function Header() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+
 
   // Sync filters from query params
   useEffect(() => {
@@ -66,6 +68,24 @@ export default function Header() {
       window.removeEventListener('logout', updateLoginStatus);
     };
   }, []);
+
+
+  // Check user login status
+   useEffect(() => {
+    const updateUserLoginStatus = () => {
+      const token = localStorage.getItem('userToken');
+      setIsUserLoggedIn(!!token);
+    };
+    updateUserLoginStatus();
+    window.addEventListener('login', updateUserLoginStatus);
+    window.addEventListener('logout', updateUserLoginStatus);
+    return () => {
+      window.removeEventListener('login', updateUserLoginStatus);
+      window.removeEventListener('logout', updateUserLoginStatus);
+    };
+  }, []);
+
+
 
   // Fetch filter options from properties
   useEffect(() => {
@@ -201,22 +221,6 @@ export default function Header() {
     
           {/* Navigation */}
           <nav className="flex flex-wrap justify-center md:justify-end gap-4 mt-2 md:mt-0">
-          
-            {coordsAllowed ? (
-              <button
-                onClick={handleShowNearest}
-                className="hover:text-yellow-300 font-medium"
-              >
-                Nearby
-              </button>
-            ) : (
-              <Link
-                href={`/properties/nearby?lat=${fallbackLat}&lng=${fallbackLng}`}
-                className="hover:text-yellow-300 font-medium"
-              >
-                Nearby
-              </Link>
-            )}
             <Link href="/properties" className="hover:text-yellow-300 font-medium">
               Properties
             </Link>
@@ -226,15 +230,91 @@ export default function Header() {
             <Link href="/properties/favorites" className="hover:text-yellow-300 font-medium">
             Favorites
             </Link>
-            {isLoggedIn ? (
-              <Link href="/admin/dashboard" className="hover:text-yellow-300 font-medium">
-                Dashboard
-              </Link>
-            ) : (
-              <Link href="/admin/login" className="hover:text-yellow-300 font-medium">
-                Admin Login
-              </Link>
-            )}
+            
+            {/* User/Admin Dropdown */}
+            <div className="relative group">
+              {/* Button */}
+              <button className="hover:text-yellow-300 font-medium flex items-center gap-1">
+                Account
+                <svg
+                  className="w-4 h-4 mt-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown */}
+              <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="flex flex-col py-1">
+                  {!isLoggedIn && !isUserLoggedIn && (
+                    <>
+                      <Link
+                        href="/admin/login"
+                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
+                      >
+                        Admin Login
+                      </Link>
+                      <Link
+                        href="/user/login"
+                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
+                      >
+                        User Login
+                      </Link>
+                    </>
+                  )}
+
+                  {isLoggedIn && (
+                    <>
+                      <Link
+                        href="/admin/dashboard"
+                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
+                      >
+                         Dashboard
+                      </Link>
+                      <button
+                        onClick={() => {
+                          localStorage.removeItem('adminToken');
+                          setIsLoggedIn(false);
+                          router.push('/');
+                        }}
+                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  )}
+
+                  {isUserLoggedIn && (
+                    <>
+                      <Link
+                        href="/user/dashboard"
+                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
+                      >
+                         Dashboard
+                      </Link>
+                      <button
+                        onClick={() => {
+                          localStorage.removeItem('userToken');
+                          setIsUserLoggedIn(false);
+                          router.push('/');
+                        }}
+                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+
+
+
             
           </nav>
         </div>
