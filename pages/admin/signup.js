@@ -20,7 +20,7 @@ export default function SignupForm() {
     setError('');
     setSuccess('');
     try {
-      const res = await axios.post('/auth/signup', data, {
+      const res = await axios.post('/admin/signup', data, {
         headers: { 'Content-Type': 'application/json' },
       });
       setSuccess(res.data.message || 'Signup successful');
