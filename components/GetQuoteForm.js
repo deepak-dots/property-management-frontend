@@ -1,4 +1,5 @@
-import { useState } from "react";
+// component/get-quote-form.js
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "../utils/axiosInstance";
 
@@ -6,6 +7,7 @@ export default function GetQuoteForm({ propertyId, onClose }) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm();
@@ -13,14 +15,34 @@ export default function GetQuoteForm({ propertyId, onClose }) {
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
 
+  // 🔹 Autofill if user is logged in
+  useEffect(() => {
+    const token = localStorage.getItem("userToken");
+    if (token) {
+      axios
+        .get("/user/me", { headers: { Authorization: `Bearer ${token}` } })
+        .then((res) => {
+          setValue("name", res.data.name || "");
+          setValue("email", res.data.email || "");
+          setValue("contactNumber", res.data.phone || "");
+        })
+        .catch(() => {});
+    }
+  }, [setValue]);
+
   const onSubmit = async (data) => {
     setSuccess(null);
     setError(null);
+
     try {
-      await axios.post("/quotes", { propertyId, ...data });
+      const token = localStorage.getItem("userToken");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      await axios.post("/quotes", { propertyId, ...data }, { headers });
+
       setSuccess("Thank you! Your quote request has been received.");
       reset();
-      setTimeout(() => onClose(), 5000);
+      setTimeout(() => onClose && onClose(), 5000);
     } catch (err) {
       console.error("Quote submit error:", err);
       const serverMsg =
@@ -35,24 +57,19 @@ export default function GetQuoteForm({ propertyId, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
- 
-
+        {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-3xl font-bold text-gray-800 hover:text-gray-600 close-btns"
+          className="absolute top-3 right-3 text-3xl font-bold text-gray-800 hover:text-gray-600"
         >
-         <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="30px" height="30px">
-          <path d="M 7.71875 6.28125 L 6.28125 7.71875 L 23.5625 25 L 6.28125 42.28125 L 7.71875 43.71875 L 25 26.4375 L 42.28125 43.71875 L 43.71875 42.28125 L 26.4375 25 L 43.71875 7.71875 L 42.28125 6.28125 L 25 23.5625 Z"/>
-         </svg>
+          &times;
         </button>
 
         {!success ? (
           <>
             <h2 className="text-2xl font-bold mb-4 text-center">Get a Quote</h2>
 
-            {error && (
-              <p className="text-red-600 mb-2 text-center">{error}</p>
-            )}
+            {error && <p className="text-red-600 mb-2 text-center">{error}</p>}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
               <input
