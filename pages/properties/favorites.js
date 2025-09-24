@@ -3,8 +3,10 @@ import PropertyCard from '../../components/PropertyCard';
 import CompareModal from '../../components/CompareModal';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function FavoritesPage() {
+  const { user } = useAuth();
   const { favorites } = useFavorites(); // full property objects
   const router = useRouter();
 
@@ -30,12 +32,25 @@ export default function FavoritesPage() {
         </div>
       ) : (
         <>
+          {/* Show login notice for guests */}
+          {!user && favorites.length > 0 && (
+            <p className="mb-8 text-gray-600">
+              Login to save properties to your wishlist.{' '}
+              <button
+                onClick={() => router.push('/user/login')}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition ml-2"
+              >
+                Login
+              </button>
+            </p>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {favorites.map((property) => (
               <PropertyCard
                 key={property._id}
                 property={property}
-                onOpenCompare={openCompareModal} // ✅ Pass function to open modal
+                onOpenCompare={openCompareModal} // Pass function to open modal
               />
             ))}
           </div>
