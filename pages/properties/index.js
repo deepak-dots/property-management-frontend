@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from '../../utils/axiosInstance';
 import PropertyCard from '../../components/PropertyCard';
-import PropertyFilters from '../../components/PropertyFilter';
+import PropertyFilters from '../../components/PropertyFilter'; // updated import
 import CompareModal from '../../components/CompareModal';
 
 export default function Properties() {
@@ -18,6 +18,9 @@ export default function Properties() {
     furnishing: '',
     transactionType: '',
     status: '',
+    radius: null, 
+    lat: null, 
+    lng: null, 
   });
 
   const [filterOptions, setFilterOptions] = useState({
@@ -32,50 +35,46 @@ export default function Properties() {
   });
 
   const [showCompareModal, setShowCompareModal] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 9;
 
   const router = useRouter();
 
-  // Fetch filtered properties with pagination
+  // Get user location
+  useEffect(() => {
+    if (!filters.lat || !filters.lng) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setFilters(prev => ({
+            ...prev,
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          }));
+        },
+        (err) => console.error("Geolocation error:", err)
+      );
+    }
+  }, []);
+
+  // Fetch properties whenever filters or page change
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const params = { ...router.query, page: currentPage, limit: itemsPerPage };
+        setLoading(true);
+        const params = { ...filters, page: currentPage, limit: itemsPerPage };
+
+        // Remove null/empty values
+        Object.keys(params).forEach(key => {
+          if (params[key] === null || params[key] === '') delete params[key];
+        });
 
         const res = await axios.get('/properties', { params });
-        const propertyList = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data.properties)
-          ? res.data.properties
-          : [];
-
+        const propertyList = res.data.properties || [];
         setProperties(propertyList);
-
-        if (res.data.totalPages) {
-          setTotalPages(res.data.totalPages);
-        } else if (res.data.totalCount) {
-          setTotalPages(Math.ceil(res.data.totalCount / itemsPerPage));
-        } else {
-          setTotalPages(1);
-        }
-
-        const query = router.query;
-        setFilters({
-          search: query.search || '',
-          city: query.city || '',
-          bhkType: query.bhkType || '',
-          propertyType: query.propertyType || '',
-          furnishing: query.furnishing || '',
-          transactionType: query.transactionType || '',
-          status: query.status || '',
-          priceMin: query.priceMin ? Number(query.priceMin) : null,
-          priceMax: query.priceMax ? Number(query.priceMax) : null,
-        });
-      } catch (error) {
-        console.error(error);
+        setTotalPages(res.data.totalPages || 1);
+      } catch (err) {
+        console.error(err);
         setProperties([]);
         setTotalPages(1);
       } finally {
@@ -83,8 +82,8 @@ export default function Properties() {
       }
     };
 
-    fetchProperties();
-  }, [router.query, currentPage]);
+    if (filters.lat && filters.lng) fetchProperties();
+  }, [filters, currentPage]);
 
   // Fetch ALL properties once to generate filter options
   useEffect(() => {
@@ -112,7 +111,6 @@ export default function Properties() {
           priceMax: maxPrice,
         });
 
-        // initialize filters with min/max on first load
         setFilters((prev) => ({
           ...prev,
           priceMin: prev.priceMin ?? minPrice,
@@ -131,26 +129,33 @@ export default function Properties() {
   
     if (eOrObj.target) {
       const { name, value } = eOrObj.target;
-      newFilters[name] = value;
+  
+      // If the user selects "All", set filter to null
+      newFilters[name] = value === "" || value === "All" ? null : value;
     } else {
       newFilters = { ...newFilters, ...eOrObj };
     }
   
-    // remove empty values
-    Object.keys(newFilters).forEach((key) => {
-      if (newFilters[key] === '' || newFilters[key] === null) delete newFilters[key];
-    });
-  
-    // convert price to numbers
+    // Convert numbers
     if (newFilters.priceMin != null) newFilters.priceMin = Number(newFilters.priceMin);
     if (newFilters.priceMax != null) newFilters.priceMax = Number(newFilters.priceMax);
+    if (newFilters.radius != null) newFilters.radius = Number(newFilters.radius);
   
     setFilters(newFilters);
     setCurrentPage(1);
   
-    // update URL
-    const params = new URLSearchParams(newFilters).toString();
-    router.push(`/properties?${params}`, undefined, { shallow: true });
+    // Prepare URL params
+    const params = { ...newFilters };
+  
+    // Only include radius & coordinates if radius is set
+    if (!params.radius) {
+      delete params.radius;
+      delete params.lat;
+      delete params.lng;
+    }
+  
+    const queryString = new URLSearchParams(params).toString();
+    router.push(`/properties?${queryString}`, undefined, { shallow: true });
   };
   
   
@@ -165,9 +170,12 @@ export default function Properties() {
       furnishing: '',
       transactionType: '',
       status: '',
+      radius: null,
+      lat: filters.lat,
+      lng: filters.lng,
     });
     setCurrentPage(1);
-    router.push('/properties');
+    router.push('/properties', undefined, { shallow: true });
   };
 
   return (
@@ -189,9 +197,10 @@ export default function Properties() {
               <p className="text-center col-span-full text-gray-500">No properties found.</p>
             ) : (
               properties.map((property) => (
-                <PropertyCard key={property._id} 
-                  property={property}   
-                  onOpenCompare={() => setShowCompareModal(true)} 
+                <PropertyCard
+                  key={property._id}
+                  property={property}
+                  onOpenCompare={() => setShowCompareModal(true)}
                 />
               ))
             )}
@@ -223,12 +232,10 @@ export default function Properties() {
         )}
       </div>
 
-       {/* Global Compare Modal */}
-        <CompareModal
-          isOpen={showCompareModal}
-          onClose={() => setShowCompareModal(false)}
-        />
-
+      <CompareModal
+        isOpen={showCompareModal}
+        onClose={() => setShowCompareModal(false)}
+      />
     </div>
   );
 }
