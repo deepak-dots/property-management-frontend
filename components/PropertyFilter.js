@@ -2,30 +2,14 @@ import React, { useState, useEffect } from "react";
 import RangeSlider from "react-range-slider-input";
 import "react-range-slider-input/dist/style.css";
 
-export default function PropertyFilters({
-  filters,
-  filterOptions,
-  onFilterChange,
-  onClearFilters,
-}) {
+export default function PropertyFilters({ filters, filterOptions, onFilterChange, onClearFilters }) {
   const minPrice = filterOptions.priceMin || 0;
   const maxPrice = filterOptions.priceMax || 1000000;
 
-  // local state for slider
-  const [sliderValues, setSliderValues] = useState([
-    filters.priceMin ?? minPrice,
-    filters.priceMax ?? maxPrice,
-  ]);
+  const [sliderValues, setSliderValues] = useState([filters.priceMin ?? minPrice, filters.priceMax ?? maxPrice]);
 
-  // ✅ only reset when clearFilters updates parent filters
   useEffect(() => {
-    if (
-      filters.priceMin === null ||
-      filters.priceMax === null ||
-      (filters.priceMin === minPrice && filters.priceMax === maxPrice)
-    ) {
-      setSliderValues([minPrice, maxPrice]);
-    }
+    setSliderValues([filters.priceMin ?? minPrice, filters.priceMax ?? maxPrice]);
   }, [filters.priceMin, filters.priceMax, minPrice, maxPrice]);
 
   const handleSliderChange = (values) => {
@@ -34,7 +18,7 @@ export default function PropertyFilters({
   };
 
   const handleClear = () => {
-    setSliderValues([minPrice, maxPrice]); // ✅ reset local slider state
+    setSliderValues([minPrice, maxPrice]);
     onClearFilters();
   };
 
@@ -42,25 +26,22 @@ export default function PropertyFilters({
     <div className="md:w-1/4 w-full bg-white shadow p-4 rounded h-fit space-y-6">
       <h3 className="text-lg font-semibold mb-4">Filters</h3>
 
-      {/* Search Input */}
+      {/* Search */}
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onFilterChange({ target: { name: "search", value: filters.search } });
-        }}
+        onSubmit={(e) => { e.preventDefault(); onFilterChange({ target: { name: "search", value: filters.search } }) }}
         className="flex items-center w-full mb-4 h-10"
       >
         <input
           type="text"
           name="search"
-          value={filters.search}
+          value={filters.search || ""}
           onChange={onFilterChange}
           placeholder="Search properties..."
           className="w-20 flex-grow border border-gray-300 rounded-l px-3 py-1 h-full focus:outline-none"
         />
       </form>
 
-      {/* Price Range Slider */}
+      {/* Price */}
       <div>
         <label className="block mb-2 font-medium">Price Range</label>
         <div className="mb-2 flex justify-between text-sm">
@@ -76,6 +57,23 @@ export default function PropertyFilters({
         />
       </div>
 
+      {/* Radius */}
+      <div>
+        <label className="block mb-1 font-medium">Radius (miles)</label>
+        <select
+          name="radius"
+          value={filters.radius ?? ''}
+          onChange={onFilterChange}
+          className="w-full border border-gray-300 rounded px-2 py-1"
+        >
+          <option value="">All</option> {/* default = no radius */}
+          {[1, 2, 5, 10, 15, 20, 30, 40, 50, 60, 70].map((mi) => (
+            <option key={mi} value={mi}>{mi} miles</option>
+          ))}
+        </select>
+      </div>
+
+
       {/* Other filters */}
       {[
         { label: "Property Type", name: "propertyType", options: filterOptions.propertyTypes },
@@ -84,7 +82,6 @@ export default function PropertyFilters({
         { label: "Furnishing", name: "furnishing", options: filterOptions.furnishings },
         { label: "Transaction Type", name: "transactionType", options: filterOptions.transactionTypes },
         { label: "Status", name: "status", options: filterOptions.statuses },
-        
       ].map(({ label, name, options }) => (
         <div key={name}>
           <label className="block mb-1 font-medium">{label}</label>
@@ -95,11 +92,7 @@ export default function PropertyFilters({
             className="w-full border border-gray-300 rounded px-2 py-1"
           >
             <option value="">All</option>
-            {options.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
+            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
           </select>
         </div>
       ))}
