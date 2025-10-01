@@ -21,8 +21,8 @@ export default function LoginForm() {
       //  Call AuthContext login which handles guest favorites sync
       await login(data.email, data.password);
 
-      // Redirect to favorites page after successful login
-      router.push('/user/favorites'); 
+      // Redirect to dashboard page after successful login
+      router.push('/user/dashboard'); 
     } catch (err) {
       setError('apiError', {
         message: err.response?.data?.message || 'Login failed',
