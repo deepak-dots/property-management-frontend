@@ -3,8 +3,8 @@
 import axios from "axios";
 
 const instance = axios.create({
-  // baseURL: 'https://property-management-backend-hrjp.onrender.com/api',
-  baseURL: "http://localhost:5000/api", // or your production backend
+  baseURL: 'https://property-management-backend-hrjp.onrender.com/api',
+  //baseURL: "http://localhost:5000/api", // or your production backend
   withCredentials: true,
 });
 
