@@ -27,7 +27,7 @@ export default function AdminProfile() {
     }
 
     try {
-      const res = await axios.get('/auth/profile', {
+      const res = await axios.get('/admin/profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
