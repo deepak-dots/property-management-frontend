@@ -113,7 +113,7 @@ export const FavoritesProvider = ({ children }) => {
       const alreadyFavorited = favorites.some((f) => f._id === propertyId);
 
       const res = await axiosInstance.post(
-        '/favorites',
+        '/user/favorites',
         { propertyId },
         { headers: { Authorization: `Bearer ${jwtToken}` } }
       );
