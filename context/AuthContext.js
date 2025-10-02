@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const guestFavorites = JSON.parse(localStorage.getItem('guestFavorites') || '[]');
         if (guestFavorites.length > 0) {
-          const serverFavRes = await axios.get('/favorites', {
+          const serverFavRes = await axios.get('/user/favorites', {
             headers: { Authorization: `Bearer ${token}` },
           });
           const serverIds = serverFavRes.data.map(f => f._id);
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
             const id = fav._id || fav;
             if (!serverIds.includes(id)) {
               await axios.post(
-                '/favorites',
+                '/user/favorites',
                 { propertyId: id },
                 { headers: { Authorization: `Bearer ${token}` } }
               );

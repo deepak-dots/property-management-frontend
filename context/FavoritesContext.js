@@ -28,7 +28,7 @@ export const FavoritesProvider = ({ children }) => {
       }
 
       try {
-        const res = await axiosInstance.get('/favorites', {
+        const res = await axiosInstance.get('/user/favorites', {
           headers: { Authorization: `Bearer ${jwtToken}` },
         });
         setFavorites(res.data);
@@ -58,7 +58,7 @@ export const FavoritesProvider = ({ children }) => {
     if (!jwtToken) return;
 
     try {
-      const res = await axiosInstance.get('/favorites', {
+      const res = await axiosInstance.get('/user/favorites', {
         headers: { Authorization: `Bearer ${jwtToken}` },
       });
       setFavorites(res.data);
