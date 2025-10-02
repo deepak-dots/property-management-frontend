@@ -1,45 +1,33 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from '../../utils/axiosInstance';
 import UserLayout from '../../components/UserLayout';
-import { 
-  UserIcon, 
-  PencilIcon, 
-  HeartIcon, 
-  ChatBubbleLeftEllipsisIcon 
-} from '@heroicons/react/24/outline';
+import { HomeIcon, UserIcon, PencilIcon, HeartIcon, ChatBubbleLeftEllipsisIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+
 
 export default function UserDashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch user dashboard info
-  const fetchDashboard = async () => {
+  const token = () => localStorage.getItem('userToken');
+
+  const fetchProfile = async () => {
+    if (!token()) return router.push('/user/login');
     try {
-      const res = await axios.get('/user/dashboard'); // axiosInstance handles token
+      const res = await axios.get('/user/dashboard', {
+        headers: { Authorization: `Bearer ${token()}` },
+      });
       setUser(res.data);
-    } catch (err) {
-      console.error('Error fetching dashboard:', err);
+    } catch {
       localStorage.removeItem('userToken');
       router.push('/user/login');
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('userToken');
-    if (!token) {
-      router.push('/user/login');
-    } else {
-      fetchDashboard();
-    }
+    fetchProfile();
   }, []);
-
-  if (loading) return <p className="p-8">Loading dashboard...</p>;
 
   return (
     <UserLayout userName={user?.name}>
@@ -65,7 +53,7 @@ export default function UserDashboard() {
           </button>
         </div>
 
-        {/* My Favorites */}
+        {/* Example additional card */}
         <div className="bg-white shadow rounded-lg p-6 flex items-center space-x-4">
           <HeartIcon className="h-12 w-12 text-yellow-500" />
           <button onClick={() => router.push('/user/favorites')}>
@@ -73,13 +61,13 @@ export default function UserDashboard() {
           </button>
         </div>
 
-        {/* My Enquiries */}
         <div className="bg-white shadow rounded-lg p-6 flex items-center space-x-4">
-          <ChatBubbleLeftEllipsisIcon className="h-12 w-12 text-purple-500" />
+          <ChatBubbleLeftEllipsisIcon className="h-12 w-12 text-yellow-500" />
           <button onClick={() => router.push('/user/enquiries')}>
             <h3 className="text-lg font-semibold text-gray-700">My Enquiries</h3>
           </button>
         </div>
+
       </div>
     </UserLayout>
   );
