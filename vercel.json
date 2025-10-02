@@ -1,0 +1,9 @@
+{
+    "rewrites": [
+      {
+        "source": "/api/:path*",
+        "destination": "https://property-management-backend-hrjp.onrender.com/api/:path*"
+      }
+    ]
+  }
+  
