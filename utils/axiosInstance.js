@@ -1,5 +1,6 @@
 // utils/axiosInstance.js
 
+// utils/axiosInstance.js
 import axios from "axios";
 
 const instance = axios.create({
@@ -11,10 +12,15 @@ const instance = axios.create({
 // Attach token from localStorage safely (only on client-side)
 instance.interceptors.request.use(
   (config) => {
-    if (typeof window !== "undefined") { // check if running on client
-      const token = localStorage.getItem("userToken"); 
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== "undefined") {
+      // Check for adminToken first
+      const adminToken = localStorage.getItem("adminToken");
+      const userToken = localStorage.getItem("userToken");
+
+      if (adminToken) {
+        //config.headers.Authorization = `Bearer ${adminToken}`;
+      } else if (userToken) {
+        config.headers.Authorization = `Bearer ${userToken}`;
       }
     }
     return config;
@@ -22,15 +28,22 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Optional: Response interceptor to handle 401 globally
+// Response interceptor to handle 401 globally
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Optional: remove token and redirect
       if (typeof window !== "undefined") {
+        // Remove both tokens
         localStorage.removeItem("userToken");
-        window.location.href = "/user/login";
+        localStorage.removeItem("adminToken");
+
+        // Redirect based on current path
+        if (window.location.pathname.startsWith("/admin")) {
+         // window.location.href = "/admin/login";
+        } else {
+          window.location.href = "/user/login";
+        }
       }
     }
     return Promise.reject(error);
@@ -38,4 +51,5 @@ instance.interceptors.response.use(
 );
 
 export default instance;
+
 
