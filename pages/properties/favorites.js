@@ -1,8 +1,9 @@
 import { useFavorites } from '../../context/FavoritesContext';
 import PropertyCard from '../../components/PropertyCard';
+import PropertyCardSkeleton from '../../skeleton/PropertyCardSkeleton';
 import CompareModal from '../../components/CompareModal';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function FavoritesPage() {
@@ -13,6 +14,17 @@ export default function FavoritesPage() {
   // State to control Compare Modal
   const [showCompareModal, setShowCompareModal] = useState(false);
 
+  // State to simulate loading
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate async fetch/loading delay
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500); // half a second delay, adjust if needed
+    return () => clearTimeout(timer);
+  }, [favorites]);
+
   const openCompareModal = () => setShowCompareModal(true);
   const closeCompareModal = () => setShowCompareModal(false);
 
@@ -20,7 +32,14 @@ export default function FavoritesPage() {
     <div className="max-w-6xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-6">Your Favorites</h2>
 
-      {favorites.length === 0 ? (
+      {loading ? (
+        // Show 6 skeletons while loading
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <PropertyCardSkeleton key={idx} />
+          ))}
+        </div>
+      ) : favorites.length === 0 ? (
         <div className="text-center mt-10">
           <p className="mb-4">No favorites yet.</p>
           <button
