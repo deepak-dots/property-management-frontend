@@ -1,19 +1,29 @@
 // pages/_app.js
 import '../styles/globals.css';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import { useRouter } from 'next/router';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import 'react-toastify/dist/ReactToastify.css';
+
+import { useRouter } from 'next/router';
+import { ToastContainer } from 'react-toastify';
+
 import { AuthProvider } from '../context/AuthContext';
 import { FavoritesProvider } from '../context/FavoritesContext';
 import { CompareProvider } from '../context/CompareContext';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
+// Import Header/Footer safely
+import HeaderImport from '../components/Header';
+import FooterImport from '../components/Footer';
+
+// Handle default/named exports
+const Header = HeaderImport?.default || HeaderImport;
+const Footer = FooterImport?.default || FooterImport;
 
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
+
+  // Add paths where header/footer should be hidden
   const hideHeaderFooter = [];
   const shouldHide = hideHeaderFooter.includes(router.pathname);
 
@@ -21,9 +31,9 @@ function MyApp({ Component, pageProps }) {
     <AuthProvider>
       <FavoritesProvider>
         <CompareProvider>
-          {!shouldHide && <Header />}
+          {!shouldHide && Header && <Header />}
           <Component {...pageProps} />
-          {!shouldHide && <Footer />}
+          {!shouldHide && Footer && <Footer />}
           <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
         </CompareProvider>
       </FavoritesProvider>
