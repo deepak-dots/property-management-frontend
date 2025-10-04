@@ -4,6 +4,7 @@ import axios from '../../utils/axiosInstance';
 import PropertyCard from '../../components/PropertyCard';
 import PropertyFilters from '../../components/PropertyFilter'; // updated import
 import CompareModal from '../../components/CompareModal';
+import PropertyCardSkeleton from '../../skeleton/PropertyCardSkeleton';
 
 export default function Properties() {
   const [properties, setProperties] = useState([]);
@@ -192,7 +193,9 @@ export default function Properties() {
 
           <div className="md:w-3/4 w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading ? (
-              <p className="text-center col-span-full text-gray-500">Loading...</p>
+              Array.from({ length: itemsPerPage }).map((_, idx) => (
+                <PropertyCardSkeleton key={idx} />
+              ))
             ) : properties.length === 0 ? (
               <p className="text-center col-span-full text-gray-500">No properties found.</p>
             ) : (

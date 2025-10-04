@@ -15,6 +15,7 @@ import CompareModal from '../../components/CompareModal';
 import { useFavorites } from '../../context/FavoritesContext';
 import { toast } from 'react-toastify';
 import { ArrowsRightLeftIcon, XMarkIcon, HeartIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import PropertyCardSkeleton from '../../skeleton/PropertyCardSkeleton';
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -119,6 +120,17 @@ const PropertyDetail = () => {
     console.log('Form Submitted:', formData);
     closeModal();
   };
+
+  // Loading skeleton while property is null
+  if (!property) {
+    return (
+      <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <PropertyCardSkeleton key={idx} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -430,13 +442,10 @@ const PropertyDetail = () => {
       <div className="max-w-5xl mx-auto mt-12">
         <h2 className="text-2xl font-bold mb-6">Similar Properties</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {relatedProperties.map((rp) => (
-            <PropertyCard key={rp._id} 
-            property={rp} 
-            onOpenCompare={() => setShowCompareModal(true)} 
-            
-            />
-          ))}
+        {relatedProperties.length === 0
+              ? Array.from({ length: 6 }).map((_, idx) => <PropertyCardSkeleton key={idx} />)
+              : relatedProperties.map(rp => <PropertyCard key={rp._id} property={rp} onOpenCompare={() => setShowCompareModal(true)} />)
+            }
         </div>
       </div>
 

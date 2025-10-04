@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from './UserSidebar';
 import axios from '../utils/axiosInstance';
+import UserDashboardSkeleton from '../skeleton/UserDashboardSkeleton';
 
 export default function UserLayout({ children }) {
   const router = useRouter();
@@ -30,10 +31,7 @@ export default function UserLayout({ children }) {
     fetchUser();
   }, [router]);
 
-  if (loading)
-    return (
-      <div className="text-center mt-10 text-gray-500">Loading...</div>
-    );
+  if (loading) return <UserDashboardSkeleton />; // show skeleton
 
   return (
     <div className="flex min-h-screen bg-gray-100">
