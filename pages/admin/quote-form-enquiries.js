@@ -1,4 +1,4 @@
-// pages/admin/enquiries.js
+// pages/admin/enquiries.js 
 import { useEffect, useState } from "react";
 import axios from "../../utils/axiosInstance";
 import { useRouter } from "next/router";
