@@ -8,7 +8,7 @@ import axios from '../../utils/axiosInstance';
 
 export default function LoginForm() {
   const router = useRouter();
-  const { login, loginWithOTP } = useAuth(); // ✅ include loginWithOTP
+  const { login, loginWithOTP } = useAuth(); //
   const {
     register,
     handleSubmit,
@@ -20,34 +20,49 @@ export default function LoginForm() {
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
 
-  const onSubmit = async (data) => {
-    try {
-      if (!useOtp) {
-        console.log('Password login:', data);
-        await login(data.email, data.password); // AuthContext login handles token
-        router.push('/user/dashboard');
-      } else {
-        console.log('OTP login, otpSent:', otpSent);
-        if (!otpSent) {
-          console.log('Sending OTP to:', data.email);
+const onSubmit = async (data) => {
+  try {
+    if (!useOtp) {
+      console.log('Password login:', data);
+      await login(data.email, data.password); // AuthContext login handles token
+      router.push('/user/dashboard');
+    } else {
+      console.log('OTP login, otpSent:', otpSent);
+      if (!otpSent) {
+        console.log('Sending OTP to:', data.email);
+        try {
           await axios.post('/user/login/send-otp', { email: data.email });
           setOtpSent(true);
-        } else {
-          console.log('Verifying OTP:', otp);
-          
+        } catch (err) {
+          console.error('Error sending OTP:', err.response?.data || err.message);
+          setError('apiError', {
+            message: err.response?.data?.message || 'Failed to send OTP',
+          });
+        }
+      } else {
+        console.log('Verifying OTP:', otp);
+
+        try {
           // ✅ Use AuthContext loginWithOTP for proper state & token handling
           await loginWithOTP(data.email, otp, setError);
 
-          router.push('/user/dashboard'); // dashboard won't redirect back
+          router.push('/user/dashboard'); // redirect to dashboard
+        } catch (err) {
+          console.error('OTP verification error:', err.response?.data || err.message);
+          setError('apiError', {
+            message: err.response?.data?.message || 'OTP verification failed',
+          });
         }
       }
-    } catch (err) {
-      console.error('Login error:', err.response?.data || err);
-      setError('apiError', {
-        message: err.response?.data?.message || 'Login failed',
-      });
     }
-  };
+  } catch (err) {
+    console.error('Login error:', err.response?.data || err);
+    setError('apiError', {
+      message: err.response?.data?.message || 'Login failed',
+    });
+  }
+};
+
   
 
   return (
