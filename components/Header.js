@@ -252,12 +252,12 @@ export default function Header() {
                 <div className="flex flex-col py-1">
                   {!isLoggedIn && !isUserLoggedIn && (
                     <>
-                      <Link
+                      {/* <Link
                         href="/admin/login"
                         className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
                       >
                         Admin Login
-                      </Link>
+                      </Link> */}
                       <Link
                         href="/user/login"
                         className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
@@ -267,7 +267,7 @@ export default function Header() {
                     </>
                   )}
 
-                  {isLoggedIn && (
+                  {/* {isLoggedIn && (
                     <>
                       <Link
                         href="/admin/dashboard"
@@ -286,7 +286,7 @@ export default function Header() {
                         Logout
                       </button>
                     </>
-                  )}
+                  )} */}
 
                   {isUserLoggedIn && (
                     <>
