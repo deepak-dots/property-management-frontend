@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Modal from 'react-modal';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -16,6 +16,13 @@ import { useFavorites } from '../../context/FavoritesContext';
 import { toast } from 'react-toastify';
 import { ArrowsRightLeftIcon, XMarkIcon, HeartIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import PropertyCardSkeleton from '../../skeleton/PropertyCardSkeleton';
+import PropertyMap from '../../components/PropertyMap';
+import { defaultAmenities } from '../../utils/amenities';
+
+
+import ReviewForm from '../../components/PropertyReview';
+import Rating from 'react-rating';
+import { StarIcon } from '@heroicons/react/24/solid';
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -27,7 +34,8 @@ const PropertyDetail = () => {
   const { id } = router.query;
 
   const [clientId, setClientId] = useState(null);
-  const [property, setProperty] = useState({});
+  //const [property, setProperty] = useState({});
+  const [property, setProperty] = useState({ reviews: [] });
   const [relatedProperties, setRelatedProperties] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalMode, setModalMode] = useState(null);
@@ -37,6 +45,12 @@ const PropertyDetail = () => {
 
   const { compareList, toggleCompare } = useCompare();
   const { favorites, toggleFavorite } = useFavorites();
+
+  const [activeTab, setActiveTab] = useState(null);
+
+  
+
+  const [rating, setRating] = useState(0);
 
   const [showCompareModal, setShowCompareModal] = useState(false); // ⬅️ new state
 
@@ -60,6 +74,12 @@ const PropertyDetail = () => {
   };
 
 
+  useEffect(() => {
+    if (!activeTab && property?.propertyType && defaultAmenities[property.propertyType]) {
+      const firstGroup = Object.keys(defaultAmenities[property.propertyType])[0];
+      setActiveTab(firstGroup);
+    }
+  }, [property, activeTab]);
 
   useEffect(() => {
     Modal.setAppElement('#__next');
@@ -120,6 +140,8 @@ const PropertyDetail = () => {
     console.log('Form Submitted:', formData);
     closeModal();
   };
+
+  const reviewSectionRef = useRef(null);
 
   // Loading skeleton while property is null
   if (!property) {
@@ -189,6 +211,7 @@ const PropertyDetail = () => {
 
           <div className="md:w-1/2 text-gray-700">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
               <div><strong>Property Type:</strong> <p>{property.propertyType || '-'}</p></div>
               <div><strong>Super Builtup Area:</strong> <p>{property.superBuiltupArea || '-'}</p></div>
               <div><strong>Transaction Type:</strong> <p>{property.transactionType || '-'}</p></div>
@@ -198,9 +221,26 @@ const PropertyDetail = () => {
               <div><strong>Status:</strong> <p>{property.status || '-'}</p></div>
               <div><strong>Furnishing Status:</strong> <p>{property.furnishing || '-'}</p></div>
               <div><strong>Price:</strong> <p>{property.price ? `₹${property.price.toLocaleString()}` : '-'}</p></div>
+              
+            </div>
+            {/* ⭐ Rating Stars */}
+            <div
+              className="flex items-center gap-1 mb-2 mt-10 cursor-pointer"
+              onClick={() => {
+                reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              <Rating
+                readonly
+                initialRating={property.averageRating || 0}
+                emptySymbol={<StarIcon className="w-4 h-4 text-gray-300" />}
+                fullSymbol={<StarIcon className="w-4 h-4 text-yellow-400" />}
+              />
+              <span className="text-xs text-gray-600">
+                ({property.reviews?.length || 0})
+              </span>
             </div>
 
-           
 
             
             {/* Compare Modal */}
@@ -322,7 +362,22 @@ const PropertyDetail = () => {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-6">
+
+      {/* Property Map Section */}
+      {property.location?.coordinates?.length === 2 && (
+        <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
+          <h2 className="text-2xl font-bold mb-4">Property Location</h2>
+
+          {/* Pass latitude and longitude correctly */}
+          <PropertyMap
+            lat={property.location.coordinates[1]} // latitude
+            lng={property.location.coordinates[0]} // longitude
+            title={property.title}
+          />
+        </div>
+      )}
+
+      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
         <h1 className="text-3xl font-bold mb-4">More Details</h1>
         <p className="mb-6 text-gray-600"><strong>Property Name:</strong> {property.title} ({property.bhkType !== 'N/A' ? property.bhkType : property.propertyType})
         </p>
@@ -330,6 +385,7 @@ const PropertyDetail = () => {
         <p className="mb-6 text-gray-600"><strong>Price:</strong> {property.price ? `₹${property.price.toLocaleString()}` : '-'}</p>
         <p className="mb-6 text-gray-600"><strong>Address:</strong> {property.address || '-'}, {property.city || '-'}</p>
         <p className="mb-6 text-gray-600"><strong>Description:</strong> {property.description || '-'}</p>
+
 
         <div className="flex gap-3 mt-8">
               <button
@@ -368,7 +424,7 @@ const PropertyDetail = () => {
               <button
                 onClick={async () => {
                   try {
-                    const isNowFavorited = await toggleFavorite(property); // ✅ pass full object
+                    const isNowFavorited = await toggleFavorite(property); 
                     if (isNowFavorited) {
                       toast.success(`${property.title} added to favorites`);
                     } else {
@@ -438,6 +494,116 @@ const PropertyDetail = () => {
 
             </div>
       </div>
+
+
+     
+        {/* Amenities Section */}
+          {property.amenities && property.amenities.length > 0 && (
+            <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
+              <div className="mt-6">
+            
+              {property.propertyType && defaultAmenities[property.propertyType] && (
+                <div className="mt-6">
+                  <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+                    Amenities
+                  </h3>
+
+                  {/* Tabs Header */}
+                  <div className="flex flex-wrap gap-2 border-b pb-2">
+                    {Object.keys(defaultAmenities[property.propertyType]).map((groupName) => (
+                      <button
+                        key={groupName}
+                        onClick={() => setActiveTab(groupName)}
+                        className={`px-4 py-2 rounded-t-md border-b-2 transition-colors duration-200 ${
+                          activeTab === groupName
+                            ? 'border-black-700 text-black-600 font-semibold'
+                            : 'border-transparent text-black-600 hover:text-black-500'
+                        }`}
+                      >
+                        {groupName}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Tab Content */}
+                  {Object.entries(defaultAmenities[property.propertyType]).map(([groupName, groupItems]) => {
+                    if (activeTab !== groupName) return null;
+
+                    const available = groupItems.filter((a) => property.amenities.includes(a));
+                    if (available.length === 0) return (
+                      <p key={groupName} className="text-gray-500 mt-3">
+                        No amenities available in this category.
+                      </p>
+                    );
+
+                    return (
+                      <div key={groupName} className="mt-4">
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                          {available.map((a) => (
+                            <li key={a} className="flex items-center text-gray-700">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 text-black-600 mr-2 flex-shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                              {a}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              </div>
+            </div>
+          )}
+
+        {/* Reviews Section */}
+        <div
+          ref={reviewSectionRef}
+          className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2"
+        >
+          <h3 className="text-xl font-semibold mb-2">Reviews</h3>
+          {(property.reviews || []).length === 0 && <p>No reviews yet</p>}
+          <ul>
+            {(property.reviews || []).map((rev, idx) => (
+              <li key={idx} className="border-b py-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">{rev.name}</span>
+                  <Rating
+                    readonly
+                    initialRating={rev.rating}
+                    emptySymbol={<StarIcon className="w-5 h-5 text-gray-300" />}
+                    fullSymbol={<StarIcon className="w-5 h-5 text-yellow-400" />}
+                  />
+                </div>
+                <p>{rev.message}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* Review Submission Form */}
+
+        <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
+          <h2 className="text-2xl font-bold mb-4">Submit Your Review</h2>
+          <ReviewForm
+            propertyId={property._id}
+            onSuccess={(data) => {
+              setProperty((prev) => ({
+                ...prev,
+                reviews: data.reviews || [],
+                averageRating: data.averageRating || 0,
+              }));
+              setRating(data.averageRating);
+            }}
+          />
+        </div>
 
       <div className="max-w-5xl mx-auto mt-12">
         <h2 className="text-2xl font-bold mb-6">Similar Properties</h2>
