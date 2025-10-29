@@ -3,11 +3,12 @@ import { useForm } from 'react-hook-form';
 import axios from '../utils/axiosInstance';
 import { useRouter } from 'next/router';
 import ActionDropdown from './ActionDropdown';
+import { defaultAmenities } from '../utils/amenities';
+
 // const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // const baseURL = `${API_URL}/uploads/`;  // ❌ Not needed anymore with Cloudinary
 
 const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
-
 
   // Detect user location
   const detectLocation = () => {
@@ -34,11 +35,13 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
   const router = useRouter();
   const [existingImages, setExistingImages] = useState([]);
   const [removedImages, setRemovedImages] = useState([]);  
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
 
   // react-hook-form setup
   const {
     register,
     handleSubmit,
+    watch,
     setValue,
     formState: { errors },
   } = useForm({
@@ -65,6 +68,8 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
       longitude: '',
     },
   });
+
+  const selectedType = watch('propertyType');
 
 
   useEffect(() => {
@@ -103,8 +108,36 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
       // ✅ New (Cloudinary returns full URLs already)
       setExistingImages(initialData.images || []);
       setRemovedImages([]);
+
+      Object.entries(initialData).forEach(([key, value]) => {
+        if (key !== 'images' && key !== 'location' && key !== 'amenities') {
+          setValue(key, value || '');
+        }
+      });
+
+      if (initialData.location?.coordinates) {
+        setValue('longitude', initialData.location.coordinates[0] || '');
+        setValue('latitude', initialData.location.coordinates[1] || '');
+      }
+
+      setExistingImages(initialData.images || []);
+      if (Array.isArray(initialData.amenities)) {
+        setSelectedAmenities(initialData.amenities);
+      }
+
     }
   }, [initialData, isEdit, setValue]);
+
+  useEffect(() => {
+    if (!selectedType || !defaultAmenities[selectedType]) return;
+  
+    setSelectedAmenities((prev) =>
+      prev.filter((a) =>
+        Object.values(defaultAmenities[selectedType]).flat().includes(a)
+      )
+    );
+  }, [selectedType]);
+
 
   // We keep local images in state for preview & removal
   const [newImages, setNewImages] = useState([]);
@@ -133,6 +166,15 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
     });
   };
 
+   // ✅ Amenities checkbox toggle
+   const toggleAmenity = (amenity) => {
+    setSelectedAmenities((prev) =>
+      prev.includes(amenity)
+        ? prev.filter((a) => a !== amenity)
+        : [...prev, amenity]
+    );
+  };
+
   // On form submit handler
   const onSubmit = async (data) => {
     try {
@@ -149,8 +191,10 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
       if (data.longitude) formData.append('lng', data.longitude);
   
       // Append isActive as activeStatus string
-      formData.append('activeStatus', data.isActive ? 'Active' : 'Draft');
-  
+      //formData.append('activeStatus', data.isActive ? 'Active' : 'Draft');
+      selectedAmenities.forEach((amenity) => formData.append('amenities', amenity));
+
+
       // Append new images files
       newImages.forEach(file => formData.append('images', file));
   
@@ -266,6 +310,37 @@ const PropertyForm = ({ initialData = {}, isEdit = false, onSuccess }) => {
             <span className="text-red-500 text-sm mt-1">{errors.propertyType.message}</span>
           )}
         </div>
+
+         {/*  Amenities (auto based on type) */}
+         {selectedType && defaultAmenities[selectedType] && (
+            <div className="col-span-1 md:col-span-2 mt-4">
+              <label className="block font-medium mb-2">
+                Amenities ({selectedType})
+              </label>
+
+              {/* Loop through grouped sections */}
+              <div className="space-y-4 border p-3 rounded max-h-80 overflow-y-auto">
+                {Object.entries(defaultAmenities[selectedType]).map(([category, items]) => (
+                  <div key={category}>
+                    <h4 className="font-semibold text-gray-700 mb-2">{category}</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {items.map((amenity) => (
+                        <label key={amenity} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedAmenities.includes(amenity)}
+                            onChange={() => toggleAmenity(amenity)}
+                          />
+                          <span>{amenity}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
 
         {/* BHK Type */}
         <div className="flex flex-col">
