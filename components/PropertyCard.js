@@ -1,9 +1,10 @@
-// components/PropertyCard.jsx
 import { useRouter } from 'next/router';
 import { useCompare } from '../context/CompareContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { toast } from 'react-toastify';
 import { ArrowsRightLeftIcon, XMarkIcon, HeartIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import Rating from "react-rating";
+import { StarIcon } from '@heroicons/react/24/solid';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -17,28 +18,15 @@ export default function PropertyCard({ property, onOpenCompare }) {
     img?.startsWith('http') ? img : `${API_URL}/uploads/${img}`;
 
   // Favorite button  
-const handleFavoriteClick = async (e) => {
-  e.stopPropagation();
-  console.log('Toggling favorite for property ID:', property._id);
-  try {
-    // pass full property object so guest flow can store full object in localStorage
-    const isNowFavorited = await toggleFavorite(property); // returns boolean
-
-    // Show success toast based on result
-    // if (isNowFavorited) {
-    //   toast.success(`${property.title} added to favorites`);
-    // } else {
-    //   toast.success(`${property.title} removed from favorites`);
-    // }
-  } catch (err) {
-    console.error('Toggle favorite error:', err.response?.data || err.message);
-    // toggleFavorite already shows toast for guest/server errors; still show fallback
-    toast.error('Failed to update favorite');
-  }
-};
-
-  
-  
+  const handleFavoriteClick = async (e) => {
+    e.stopPropagation();
+    try {
+      await toggleFavorite(property); // returns boolean
+    } catch (err) {
+      console.error('Toggle favorite error:', err.response?.data || err.message);
+      toast.error('Failed to update favorite');
+    }
+  };
 
   // Compare button
   const handleCompareClick = (e) => {
@@ -51,20 +39,17 @@ const handleFavoriteClick = async (e) => {
   const handleViewLocationClick = () => {
     const lat = property.location?.coordinates?.[1];
     const lng = property.location?.coordinates?.[0];
-
     if (!lat || !lng) {
       toast.error('Location not available for this property');
       return;
     }
-
     const url = `https://www.google.com/maps?q=${lat},${lng}`;
     window.open(url, '_blank');
   };
 
-
   return (
-    <div className="h-full-properties-card border rounded-lg overflow-hidden shadow-md group cursor-pointer hover:shadow-lg transition-shadow duration-300">
-      {/* Image Section */}
+    <div className="h-full-properties-card border rounded-lg overflow-hidden shadow-md card-group cursor-pointer hover:shadow-lg transition-shadow duration-300">
+    {/* Image Section */}
       <div
         className="relative"
         onClick={() => router.push(`/properties/${property._id}`)}
@@ -74,6 +59,7 @@ const handleFavoriteClick = async (e) => {
             src={getImageUrl(property.images[0])}
             alt={property.title}
             className="h-56 w-full object-cover"
+            onClick={() => router.push(`/properties/${property._id}`)}
           />
         ) : (
           <div className="h-56 w-full bg-gray-200 flex items-center justify-center text-gray-500">
@@ -84,10 +70,7 @@ const handleFavoriteClick = async (e) => {
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex justify-center items-center">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/properties/${property._id}`);
-            }}
+            onClick={(e) => { e.stopPropagation(); router.push(`/properties/${property._id}`); }}
             className="bg-white text-black font-medium py-2 px-4 rounded hover:bg-gray-200"
           >
             View Details
@@ -97,11 +80,24 @@ const handleFavoriteClick = async (e) => {
 
       {/* Content Section */}
       <div className="p-4">
-        <h3 className="text-lg font-semibold">{property.title}</h3>
+        <h3 className="text-lg font-semibold"  onClick={() => router.push(`/properties/${property._id}`)}>{property.title}</h3>
 
         {property.bhkType && (
           <p className="text-sm text-gray-600 mb-1">{property.bhkType}</p>
         )}
+
+        {/* ⭐ Rating Stars */}
+        <div className="flex items-center gap-1 mb-2">
+          <Rating
+            readonly
+            initialRating={property.averageRating || 0}
+            emptySymbol={<StarIcon className="w-4 h-4 text-gray-300" />}
+            fullSymbol={<StarIcon className="w-4 h-4 text-yellow-400" />}
+          />
+          <span className="text-xs text-gray-600">
+            ({property.reviews?.length || 0})
+          </span>
+        </div>
 
         {property.price && (
           <p className="text-green-600 font-bold">
@@ -115,46 +111,70 @@ const handleFavoriteClick = async (e) => {
           </p>
         )}
 
-
         <div className="flex gap-3 mt-4 flex-wrap justify-center">
           {/* Compare Button */}
-          <button
-            onClick={handleCompareClick}
-            className={`px-3 py-1 rounded text-sm font-medium transition flex items-center gap-1 ${
-              compareList.includes(property._id)
-                ? 'bg-red-500 text-white hover:bg-red-600'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            {compareList.includes(property._id) ? (
-              <XMarkIcon className="h-5 w-5" />
-            ) : (
-              <ArrowsRightLeftIcon className="h-5 w-5" />
-            )}
-          </button>
+          <div className="relative group">
+            <button
+              onClick={handleCompareClick}
+              className={`px-3 py-2 rounded-md transition flex items-center justify-center ${
+                compareList.includes(property._id)
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
+            >
+              {compareList.includes(property._id) ? (
+                <XMarkIcon className="h-5 w-5" />
+              ) : (
+                <ArrowsRightLeftIcon className="h-5 w-5" />
+              )}
+            </button>
+
+            {/* Tooltip */}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 px-2 py-1 text-xs rounded bg-gray-800 text-white whitespace-nowrap transition-opacity duration-200">
+              {compareList.includes(property._id)
+                ? "Remove from Compare"
+                : "Add to Compare"}
+            </span>
+          </div>
 
           {/* Favorite Button */}
-          <button
-            onClick={handleFavoriteClick}
-            className="px-3 py-1 rounded text-sm font-medium bg-yellow-500 text-white hover:bg-yellow-600 transition flex items-center gap-1"
-          >
-            <HeartIcon
-              className={`h-5 w-5 ${isFavorited ? 'fill-current text-white' : ''}`}
-            />
-          </button>
+          <div className="relative group">
+            <button
+              onClick={handleFavoriteClick}
+              className="px-3 py-2 rounded-md transition flex items-center justify-center bg-yellow-500 text-white hover:bg-yellow-600"
+            >
+              <HeartIcon
+                className={`h-5 w-5 ${
+                  isFavorited ? "fill-current text-white" : ""
+                }`}
+              />
+            </button>
+
+            {/* Tooltip */}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 px-2 py-1 text-xs rounded bg-gray-800 text-white whitespace-nowrap transition-opacity duration-200">
+              {isFavorited ? "Remove from Favorites" : "Add to Favorites"}
+            </span>
+          </div>
 
           {/* View Location Button */}
           {property.location?.coordinates?.length === 2 && (
-            <button
-              className="px-3 py-2 rounded-md text-white bg-green-500 hover:bg-green-600 transition flex items-center gap-1"
-              onClick={handleViewLocationClick}
-            >
-              <MapPinIcon className="h-5 w-5" />
-            </button>
+            <div className="relative group">
+              <button
+                className="px-3 py-2 rounded-md text-white bg-green-500 hover:bg-green-600 transition flex items-center justify-center gap-1"
+                onClick={handleViewLocationClick}
+              >
+                <MapPinIcon className="h-5 w-5" />
+              </button>
+
+              {/* Tooltip */}
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 px-2 py-1 text-xs rounded bg-gray-800 text-white whitespace-nowrap transition-opacity duration-200">
+                View Location on Map
+              </span>
+            </div>
           )}
         </div>
 
-
+        
       </div>
     </div>
   );
