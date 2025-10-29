@@ -8,7 +8,11 @@
         "start": "next start -p 3000"
     },
     "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
         "@heroicons/react": "^2.2.0",
+        "@mui/material": "^7.3.4",
+        "@react-google-maps/api": "^2.20.7",
         "@tailwindcss/typography": "^0.5.16",
         "axios": "^1.4.0",
         "lucide-react": "^0.542.0",
@@ -21,6 +25,7 @@
         "react-modal": "^3.16.3",
         "react-quill": "^2.0.0",
         "react-range-slider-input": "^3.2.1",
+        "react-rating": "^2.0.5",
         "react-toastify": "^11.0.5",
         "swiper": "^11.2.10"
     },
