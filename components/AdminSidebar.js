@@ -11,6 +11,7 @@ export default function AdminSidebar({ onLogout }) {
     { href: "/admin/dashboard", label: "All Properties" },
     { href: "/admin/add-property", label: "Add New Property" },
     { href: "/admin/quote-form-enquiries", label: "Enquiry Contact" },
+    { href: "/admin/review-rating-list", label: "Review Rating list" },
     { href: "/admin/cms-pages/pages", label: "Pages" },
   ];
 

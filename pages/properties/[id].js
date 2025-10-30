@@ -36,6 +36,8 @@ const PropertyDetail = () => {
   const [clientId, setClientId] = useState(null);
   //const [property, setProperty] = useState({});
   const [property, setProperty] = useState({ reviews: [] });
+  const reviewSectionRef = useRef(null);
+  
   const [relatedProperties, setRelatedProperties] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalMode, setModalMode] = useState(null);
@@ -73,6 +75,25 @@ const PropertyDetail = () => {
     window.open(url, '_blank');
   };
 
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchReviews = async () => {
+      try {
+        const res = await axios.get(`/properties/${id}/reviews`);
+        setProperty({
+          name: res.data.propertyName,
+          averageRating: res.data.averageRating,
+          reviews: res.data.reviews.filter(r => r.approved),
+        });
+      } catch (err) {
+        console.error("Fetch reviews error:", err.response?.data || err.message);
+      }
+    };
+
+    fetchReviews();
+  }, [id]);
 
   useEffect(() => {
     if (!activeTab && property?.propertyType && defaultAmenities[property.propertyType]) {
@@ -141,7 +162,6 @@ const PropertyDetail = () => {
     closeModal();
   };
 
-  const reviewSectionRef = useRef(null);
 
   // Loading skeleton while property is null
   if (!property) {
@@ -564,30 +584,40 @@ const PropertyDetail = () => {
             </div>
           )}
 
+
+
+
         {/* Reviews Section */}
         <div
           ref={reviewSectionRef}
           className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2"
         >
           <h3 className="text-xl font-semibold mb-2">Reviews</h3>
-          {(property.reviews || []).length === 0 && <p>No reviews yet</p>}
+
+          {(property.reviews || []).filter((rev) => rev.approved).length === 0 && (
+            <p>No reviews yet</p>
+          )}
+
           <ul>
-            {(property.reviews || []).map((rev, idx) => (
-              <li key={idx} className="border-b py-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{rev.name}</span>
-                  <Rating
-                    readonly
-                    initialRating={rev.rating}
-                    emptySymbol={<StarIcon className="w-5 h-5 text-gray-300" />}
-                    fullSymbol={<StarIcon className="w-5 h-5 text-yellow-400" />}
-                  />
-                </div>
-                <p>{rev.message}</p>
-              </li>
-            ))}
+            {(property.reviews || [])
+              .filter((rev) => rev.approved) 
+              .map((rev, idx) => (
+                <li key={idx} className="border-b py-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">{rev.name}</span>
+                    <Rating
+                      readonly
+                      initialRating={rev.rating}
+                      emptySymbol={<StarIcon className="w-5 h-5 text-gray-300" />}
+                      fullSymbol={<StarIcon className="w-5 h-5 text-yellow-400" />}
+                    />
+                  </div>
+                  <p>{rev.message}</p>
+                </li>
+              ))}
           </ul>
         </div>
+
         {/* Review Submission Form */}
 
         <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">

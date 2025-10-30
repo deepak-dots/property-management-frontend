@@ -12,19 +12,15 @@ const ReviewForm = ({ propertyId, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !rating) {
-      toast.error("Please provide your name and rating");
-      return;
-    }
+    if (!name || !rating) return toast.error("Please provide name & rating");
 
     try {
       setLoading(true);
       const res = await axios.post(`/properties/${propertyId}/reviews`, { name, message, rating });
-      toast.success("Review submitted!");
+      toast.success("Review submitted for approval!");
       setName(""); setMessage(""); setRating(0);
-      onSuccess && onSuccess(res.data); // Update parent if needed
-    } catch (err) {
-      console.error(err);
+      onSuccess && onSuccess(res.data);
+    } catch {
       toast.error("Failed to submit review");
     } finally {
       setLoading(false);
@@ -39,7 +35,6 @@ const ReviewForm = ({ propertyId, onSuccess }) => {
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="w-full border p-2 rounded"
-        required
       />
 
       <textarea
@@ -55,7 +50,7 @@ const ReviewForm = ({ propertyId, onSuccess }) => {
           initialRating={rating}
           emptySymbol={<StarIcon className="w-6 h-6 text-gray-300" />}
           fullSymbol={<StarIcon className="w-6 h-6 text-yellow-400" />}
-          onChange={(value) => setRating(value)}
+          onChange={setRating}
         />
       </div>
 
