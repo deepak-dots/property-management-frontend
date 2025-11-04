@@ -233,8 +233,28 @@ export default function Header() {
             
             {/* User/Admin Dropdown */}
             <div className="relative group">
+              {/* User Account Button */}
+              <div>
+                {!isUserLoggedIn ? (
+                  <Link
+                    href="/user/login"
+                    className="hover:text-yellow-300 font-medium flex items-center gap-1"
+                  >
+                    Login
+                  </Link>
+                ) : (
+                  <Link
+                    href="/user/dashboard"
+                    className="hover:text-yellow-300 font-medium flex items-center gap-1"
+                  >
+                    Dashboard
+                  </Link>
+                )}
+              </div>
+
+
               {/* Button */}
-              <button className="hover:text-yellow-300 font-medium flex items-center gap-1">
+              {/* <button className="hover:text-yellow-300 font-medium flex items-center gap-1">
                 Account
                 <svg
                   className="w-4 h-4 mt-1"
@@ -245,10 +265,10 @@ export default function Header() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </button>
+              </button> */}
 
               {/* Dropdown */}
-              <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:hidden transition-all duration-200 z-50">
                 <div className="flex flex-col py-1">
                   {!isLoggedIn && !isUserLoggedIn && (
                     <>
