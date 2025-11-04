@@ -38,7 +38,7 @@ export default function Properties() {
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 12;
 
   const router = useRouter();
 
@@ -181,7 +181,7 @@ export default function Properties() {
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-8xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">Properties</h1>
         <div className="flex flex-col md:flex-row gap-6">
           <PropertyFilters
@@ -191,7 +191,7 @@ export default function Properties() {
             onClearFilters={clearFilters}
           />
 
-          <div className="md:w-3/4 w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="md:w-4/4 w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {loading ? (
               Array.from({ length: itemsPerPage }).map((_, idx) => (
                 <PropertyCardSkeleton key={idx} />

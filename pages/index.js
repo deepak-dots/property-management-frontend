@@ -27,7 +27,7 @@ export default function Home() {
     setLoadingFeatured(true);
 
     // Recent properties
-    axios.get('/properties?limit=3')
+    axios.get('/properties?limit=4')
       .then(res => {
         if (Array.isArray(res.data)) setRecentProperties(res.data);
         else if (Array.isArray(res.data.properties)) setRecentProperties(res.data.properties);
@@ -63,7 +63,7 @@ export default function Home() {
       </div>
 
       {/* Featured Properties - Slider */}
-      <div className="max-w-7xl mx-auto p-6 mt-12">
+      <div className="max-w-8xl mx-auto p-6 mt-12">
         <h2 className="text-2xl font-bold mb-6">Featured Properties</h2>
 
         <Swiper
@@ -74,9 +74,9 @@ export default function Home() {
           breakpoints={{
             640: { slidesPerView: 1 },
             768: { slidesPerView: 1 },
-            990: { slidesPerView: 3 },
-            1200: { slidesPerView: 3 },
-            1600: { slidesPerView: 3 },
+            990: { slidesPerView: 4 },
+            1200: { slidesPerView: 4 },
+            1600: { slidesPerView: 4 },
           }}
           autoplay={{
             delay: 3000,
@@ -241,9 +241,9 @@ export default function Home() {
 
 
       {/* Recently Added Properties - Grid */}
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-8xl mx-auto p-6">
         <h2 className="text-2xl font-bold mb-6">Recently Added Properties</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {loadingRecent
             ? Array.from({ length: 4 }).map((_, idx) => (
                 <PropertyCardSkeleton key={idx} />

@@ -166,7 +166,7 @@ const PropertyDetail = () => {
   // Loading skeleton while property is null
   if (!property) {
     return (
-      <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {Array.from({ length: 6 }).map((_, idx) => (
           <PropertyCardSkeleton key={idx} />
         ))}
@@ -176,7 +176,7 @@ const PropertyDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-5xl mx-auto rounded-lg shadow-md p-6">
+      <div className="max-w-6xl mx-auto rounded-lg shadow-md p-6">
         <h1 className="text-3xl font-bold mb-4">
         {property.title} ({property.bhkType !== 'N/A' ? property.bhkType : property.propertyType})
         , {property.city}
@@ -385,7 +385,7 @@ const PropertyDetail = () => {
 
       {/* Property Map Section */}
       {property.location?.coordinates?.length === 2 && (
-        <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
+        <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
           <h2 className="text-2xl font-bold mb-4">Property Location</h2>
 
           {/* Pass latitude and longitude correctly */}
@@ -397,7 +397,7 @@ const PropertyDetail = () => {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
         <h1 className="text-3xl font-bold mb-4">More Details</h1>
         <p className="mb-6 text-gray-600"><strong>Property Name:</strong> {property.title} ({property.bhkType !== 'N/A' ? property.bhkType : property.propertyType})
         </p>
@@ -519,7 +519,7 @@ const PropertyDetail = () => {
      
         {/* Amenities Section */}
           {property.amenities && property.amenities.length > 0 && (
-            <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
+            <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
               <div className="mt-6">
             
               {property.propertyType && defaultAmenities[property.propertyType] && (
@@ -590,7 +590,7 @@ const PropertyDetail = () => {
         {/* Reviews Section */}
         <div
           ref={reviewSectionRef}
-          className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2"
+          className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2"
         >
           <h3 className="text-xl font-semibold mb-2">Reviews</h3>
 
@@ -620,7 +620,7 @@ const PropertyDetail = () => {
 
         {/* Review Submission Form */}
 
-        <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
+        <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6 mt-2">
           <h2 className="text-2xl font-bold mb-4">Submit Your Review</h2>
           <ReviewForm
             propertyId={property._id}
@@ -635,7 +635,7 @@ const PropertyDetail = () => {
           />
         </div>
 
-      <div className="max-w-5xl mx-auto mt-12">
+      <div className="max-w-6xl mx-auto mt-12">
         <h2 className="text-2xl font-bold mb-6">Similar Properties</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {relatedProperties.length === 0
