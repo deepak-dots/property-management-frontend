@@ -4,21 +4,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from '../utils/axiosInstance';
-
 import SearchBar from './SearchBar';
 import FilterBar from './FilterBar';
 
 export default function Header() {
   const router = useRouter();
 
-  
-  // Fallback coordinates for nearest properties
+  // Fallback coordinates
   const fallbackLat = 26.8594;
   const fallbackLng = 75.8328;
 
   const [coordsAllowed, setCoordsAllowed] = useState(true);
 
-  // Selected filter states
+  // Selected filters
   const [propertyType, setPropertyType] = useState('');
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
@@ -27,7 +25,7 @@ export default function Header() {
   const [transactionType, setTransactionType] = useState('');
   const [status, setStatus] = useState('');
 
-  // Filter option lists
+  // Options
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [cities, setCities] = useState([]);
   const [bhkTypes, setBhkTypes] = useState([]);
@@ -40,11 +38,9 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
-
-  // Sync filters from query params
+  // Sync filters from query
   useEffect(() => {
     if (!router.isReady) return;
-
     setSearch(router.query.search || '');
     setPropertyType(router.query.propertyType || '');
     setCity(router.query.city || '');
@@ -54,44 +50,24 @@ export default function Header() {
     setStatus(router.query.status || '');
   }, [router.isReady, router.query]);
 
-  // Check login status
+  // Login status (Admin + User)
   useEffect(() => {
-    const updateLoginStatus = () => {
-      const token = localStorage.getItem('adminToken');
-      setIsLoggedIn(!!token);
-    };
-    updateLoginStatus();
-    window.addEventListener('login', updateLoginStatus);
-    window.addEventListener('logout', updateLoginStatus);
+    const updateAdminLogin = () => setIsLoggedIn(!!localStorage.getItem('adminToken'));
+    const updateUserLogin = () => setIsUserLoggedIn(!!localStorage.getItem('userToken'));
+
+    updateAdminLogin();
+    updateUserLogin();
+    window.addEventListener('login', updateUserLogin);
+    window.addEventListener('logout', updateUserLogin);
     return () => {
-      window.removeEventListener('login', updateLoginStatus);
-      window.removeEventListener('logout', updateLoginStatus);
+      window.removeEventListener('login', updateUserLogin);
+      window.removeEventListener('logout', updateUserLogin);
     };
   }, []);
 
-
-  // Check user login status
-   useEffect(() => {
-    const updateUserLoginStatus = () => {
-      const token = localStorage.getItem('userToken');
-      setIsUserLoggedIn(!!token);
-    };
-    updateUserLoginStatus();
-    window.addEventListener('login', updateUserLoginStatus);
-    window.addEventListener('logout', updateUserLoginStatus);
-    return () => {
-      window.removeEventListener('login', updateUserLoginStatus);
-      window.removeEventListener('logout', updateUserLoginStatus);
-    };
-  }, []);
-
-
-
-  // Fetch filter options from properties
+  // Fetch filters
   useEffect(() => {
     setLoading(true);
-    setError(null);
-
     axios
       .get('/properties')
       .then((res) => {
@@ -100,48 +76,24 @@ export default function Header() {
           : Array.isArray(res.data.properties)
           ? res.data.properties
           : [];
-
         if (!properties.length) {
-          setError('No properties found to build filters.');
-          setPropertyTypes([]);
-          setCities([]);
-          setBhkTypes([]);
-          setFurnishings([]);
-          setTransactionTypes([]);
-          setStatuses([]);
+          setError('No properties found.');
           return;
         }
 
-        const propertyTypeSet = new Set();
-        const citySet = new Set();
-        const bhkSet = new Set();
-        const furnishingSet = new Set();
-        const transactionTypeSet = new Set();
-        const statusSet = new Set();
+        const unique = (key) => [...new Set(properties.map((p) => p[key]).filter(Boolean))].sort();
 
-        properties.forEach((p) => {
-          if (p.propertyType) propertyTypeSet.add(p.propertyType);
-          if (p.city) citySet.add(p.city);
-          if (p.bhkType) bhkSet.add(p.bhkType);
-          if (p.furnishing) furnishingSet.add(p.furnishing);
-          if (p.transactionType) transactionTypeSet.add(p.transactionType);
-          if (p.status) statusSet.add(p.status);
-        });
-
-        setPropertyTypes([...propertyTypeSet].sort());
-        setCities([...citySet].sort());
-        setBhkTypes([...bhkSet].sort());
-        setFurnishings([...furnishingSet].sort());
-        setTransactionTypes([...transactionTypeSet].sort());
-        setStatuses([...statusSet].sort());
+        setPropertyTypes(unique('propertyType'));
+        setCities(unique('city'));
+        setBhkTypes(unique('bhkType'));
+        setFurnishings(unique('furnishing'));
+        setTransactionTypes(unique('transactionType'));
+        setStatuses(unique('status'));
       })
-      .catch(() => {
-        setError('Failed to load filter options.');
-      })
+      .catch(() => setError('Failed to load filters'))
       .finally(() => setLoading(false));
   }, []);
 
-  // Update search in URL
   const handleSearch = (searchValue) => {
     setSearch(searchValue);
     router.push({
@@ -150,50 +102,15 @@ export default function Header() {
     });
   };
 
-  // Update filters in URL
-  const handleFilter = ({
-    propertyType: newPropertyType = '',
-    city: newCity = '',
-    bhkType: newBhkType = '',
-    furnishing: newFurnishing = '',
-    transactionType: newTransactionType = '',
-    status: newStatus = '',
-  }) => {
-    setPropertyType(newPropertyType);
-    setCity(newCity);
-    setBhkType(newBhkType);
-    setFurnishing(newFurnishing);
-    setTransactionType(newTransactionType);
-    setStatus(newStatus);
-
+  const handleFilter = (filters) => {
     router.push({
       pathname: '/properties',
-      query: {
-        ...router.query,
-        propertyType: newPropertyType || undefined,
-        city: newCity || undefined,
-        bhkType: newBhkType || undefined,
-        furnishing: newFurnishing || undefined,
-        transactionType: newTransactionType || undefined,
-        status: newStatus || undefined,
-        page: undefined,
-      },
+      query: { ...router.query, ...filters, page: undefined },
     });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    setIsLoggedIn(false);
-    router.push('/');
-  };
-
-   // Detect if geolocation is allowed
-   useEffect(() => {
-    if (!navigator.geolocation) {
-      setCoordsAllowed(false);
-      return;
-    }
-
+  useEffect(() => {
+    if (!navigator.geolocation) return setCoordsAllowed(false);
     navigator.geolocation.getCurrentPosition(
       () => setCoordsAllowed(true),
       () => setCoordsAllowed(false)
@@ -204,12 +121,11 @@ export default function Header() {
     router.push(`/properties/nearby?lat=${fallbackLat}&lng=${fallbackLng}`);
   };
 
-
   return (
-    <header className="w-full">
-      {/* Top Bar */}
-      <div className="bg-black text-white py-3 px-4 sm:px-8 shadow-md">
-        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between">
+    <header className="w-full bg-black shadow sticky top-0 z-50">
+      {/* Row 1: Logo | Search | Menu */}
+      <div className="border-b border-gray-200">
+        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-3">
           {/* Logo */}
           <Link href="/">
             <img
@@ -218,138 +134,52 @@ export default function Header() {
               className="h-10 w-auto"
             />
           </Link>
-    
-          {/* Navigation */}
-          <nav className="flex flex-wrap justify-center md:justify-end gap-4 mt-2 md:mt-0">
-            <Link href="/properties" className="hover:text-yellow-300 font-medium">
+
+          {/* Search */}
+          <div className="flex-1 w-full md:max-w-xl">
+            <SearchBar initialSearch={search} onSearch={handleSearch} />
+          </div>
+
+          {/* Menu */}
+          <nav className="flex flex-wrap justify-center md:justify-end gap-4 text-white font-medium">
+            <Link href="/properties" className="hover:text-blue-600">
               Properties
             </Link>
-            <Link href="/properties/compare" className="hover:text-yellow-300 font-medium">
+            <Link href="/properties/compare" className="hover:text-white-600">
               Compare
             </Link>
-            <Link href="/properties/favorites" className="hover:text-yellow-300 font-medium">
-            Favorites
+            <Link href="/properties/favorites" className="hover:text-white-600">
+              Favorites
             </Link>
-            
-            {/* User/Admin Dropdown */}
-            <div className="relative group">
-              {/* User Account Button */}
-              <div>
-                {!isUserLoggedIn ? (
-                  <Link
-                    href="/user/login"
-                    className="hover:text-yellow-300 font-medium flex items-center gap-1"
-                  >
-                    Login
-                  </Link>
-                ) : (
-                  <Link
-                    href="/user/dashboard"
-                    className="hover:text-yellow-300 font-medium flex items-center gap-1"
-                  >
-                    Dashboard
-                  </Link>
-                )}
-              </div>
 
-
-              {/* Button */}
-              {/* <button className="hover:text-yellow-300 font-medium flex items-center gap-1">
-                Account
-                <svg
-                  className="w-4 h-4 mt-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+            {!isUserLoggedIn ? (
+              <Link href="/user/login" className="hover:text-white-600">
+                Login
+              </Link>
+            ) : (
+              <>
+                <Link href="/user/dashboard" className="hover:text-white-600">
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('userToken');
+                    setIsUserLoggedIn(false);
+                    router.push('/');
+                  }}
+                  className="hover:text-white-600"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button> */}
-
-              {/* Dropdown */}
-              <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:hidden transition-all duration-200 z-50">
-                <div className="flex flex-col py-1">
-                  {!isLoggedIn && !isUserLoggedIn && (
-                    <>
-                      {/* <Link
-                        href="/admin/login"
-                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
-                      >
-                        Admin Login
-                      </Link> */}
-                      <Link
-                        href="/user/login"
-                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
-                      >
-                        User Login
-                      </Link>
-                    </>
-                  )}
-
-                  {/* {isLoggedIn && (
-                    <>
-                      <Link
-                        href="/admin/dashboard"
-                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
-                      >
-                         Dashboard
-                      </Link>
-                      <button
-                        onClick={() => {
-                          localStorage.removeItem('adminToken');
-                          setIsLoggedIn(false);
-                          router.push('/');
-                        }}
-                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
-                      >
-                        Logout
-                      </button>
-                    </>
-                  )} */}
-
-                  {isUserLoggedIn && (
-                    <>
-                      <Link
-                        href="/user/dashboard"
-                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
-                      >
-                         Dashboard
-                      </Link>
-                      <button
-                        onClick={() => {
-                          localStorage.removeItem('userToken');
-                          setIsUserLoggedIn(false);
-                          router.push('/');
-                        }}
-                        className="w-full text-center px-4 py-2 hover:bg-yellow-300 hover:text-black"
-                      >
-                        Logout
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-
-
-
-            
+                  Logout
+                </button>
+              </>
+            )}
           </nav>
         </div>
       </div>
-    
-      {/* Search Bar */}
-      <div className="bg-white py-4 px-4 sm:px-8 border-b shadow-sm">
+
+      {/* Row 2: Filter Bar */}
+      <div className="bg-gray-50 border-t border-gray-200 py-3 px-4">
         <div className="max-w-screen-xl mx-auto">
-          <SearchBar initialSearch={search} onSearch={handleSearch} />
-        </div>
-      </div>
-    
-      {/* Filter Bar */}
-      <div className="bg-black py-3 px-4 sm:px-8 border-b">
-        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center gap-4">
           <FilterBar
             initialPropertyType={propertyType}
             initialCity={city}
@@ -365,13 +195,12 @@ export default function Header() {
             statuses={statuses}
             onFilter={handleFilter}
             loading={loading}
-            coordsAllowed={coordsAllowed}   
+            coordsAllowed={coordsAllowed}
             handleShowNearest={handleShowNearest}
           />
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </div>
       </div>
     </header>
-  
   );
 }
