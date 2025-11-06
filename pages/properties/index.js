@@ -65,11 +65,14 @@ export default function Properties() {
         setLoading(true);
         const params = { ...filters, page: currentPage, limit: itemsPerPage };
 
+        params.priceMin = Number(params.priceMin);
+        params.priceMax = Number(params.priceMax);
+  
         // Remove null/empty values
         Object.keys(params).forEach(key => {
           if (params[key] === null || params[key] === '') delete params[key];
         });
-
+  
         const res = await axios.get('/properties', { params });
         const propertyList = res.data.properties || [];
         setProperties(propertyList);
@@ -82,9 +85,35 @@ export default function Properties() {
         setLoading(false);
       }
     };
-
+  
     if (filters.lat && filters.lng) fetchProperties();
   }, [filters, currentPage]);
+  
+  
+
+  // Sync query params from URL → filters on first load or page refresh
+    useEffect(() => {
+      if (!router.isReady) return;
+
+      const query = router.query;
+      if (Object.keys(query).length === 0) return;
+
+      setFilters((prev) => {
+        const updated = { ...prev };
+
+        Object.keys(query).forEach((key) => {
+          // Convert numeric fields properly
+          if (["priceMin", "priceMax", "radius", "lat", "lng"].includes(key)) {
+            updated[key] = Number(query[key]);
+          } else {
+            updated[key] = query[key];
+          }
+        });
+
+        return updated;
+      });
+    }, [router.isReady, router.query]);
+
 
   // Fetch ALL properties once to generate filter options
   useEffect(() => {
