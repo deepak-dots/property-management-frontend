@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from '../utils/axiosInstance';
 import PropertyCard from '../components/PropertyCard';
+import BlogCard from '../components/BlogCard';
 import CompareModal from '../components/CompareModal';
 import PropertyCardSkeleton from '../skeleton/PropertyCardSkeleton';
-
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
 
@@ -16,15 +16,19 @@ import 'swiper/css/navigation';
 export default function Home() {
   const [recentProperties, setRecentProperties] = useState([]);
   const [featuredProperties, setFeaturedProperties] = useState([]);
+  const [recentBlogs, setRecentBlogs] = useState([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [loadingBlogs, setLoadingBlogs] = useState(true);
   const [showCompareModal, setShowCompareModal] = useState(false);
   const router = useRouter();
 
-  // Fetch recent and featured properties
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     setLoadingRecent(true);
     setLoadingFeatured(true);
+    setLoadingBlogs(true);
 
     // Recent properties
     axios.get('/properties?limit=4')
@@ -51,11 +55,24 @@ export default function Home() {
         setFeaturedProperties([]);
       })
       .finally(() => setLoadingFeatured(false));
+
+    // Recent blogs
+    axios.get('/blogs?limit=4') // Adjust limit as needed
+      .then(res => {
+        if (Array.isArray(res.data.data)) setRecentBlogs(res.data.data);
+        else setRecentBlogs([]);
+      })
+      .catch(err => {
+        console.error(err);
+        setRecentBlogs([]);
+      })
+      .finally(() => setLoadingBlogs(false));
   }, []);
 
   return (
     <div>
       {/* Banner */}
+      
       <div className="hero-banner bg-cover bg-center h-[300px] flex items-center justify-center text-white">
         <h1 className="text-4xl font-bold bg-black bg-opacity-50 p-4 rounded">
           Welcome to Dotsquares eProperty
@@ -227,8 +244,8 @@ export default function Home() {
               Enter a realm where exquisite design and timeless luxury come together.
             </h2>
             <a
-              href="#"
-              className="bg-white py-4 px-8 rounded-full text-dark hover:bg-dark hover:text-white duration-300"
+              href="/page/contact-us"
+              className="bg-white py-4 px-8 rounded-full text-dark duration-300"
             >
               Get In Touch
             </a>
@@ -237,29 +254,42 @@ export default function Home() {
       </div>
     </div>
 
-
-
-
-      {/* Recently Added Properties - Grid */}
-      <div className="max-w-8xl mx-auto p-6">
-        <h2 className="text-2xl font-bold mb-6">Recently Added Properties</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {loadingRecent
-            ? Array.from({ length: 4 }).map((_, idx) => (
-                <PropertyCardSkeleton key={idx} />
-              ))
-            : recentProperties.length === 0
-            ? <p className="col-span-full text-center text-gray-500">No properties found.</p>
-            : recentProperties.map(property => (
-                <PropertyCard
-                  key={property._id}
-                  property={property}
-                  onOpenCompare={() => setShowCompareModal(true)}
-                  isInSlider={false}
-                />
-              ))}
-        </div>
+    {/* Recently Added Properties - Grid */}
+    <div className="max-w-8xl mx-auto p-6">
+      <h2 className="text-2xl font-bold mb-6">Recently Added Properties</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        {loadingRecent
+          ? Array.from({ length: 4 }).map((_, idx) => (
+              <PropertyCardSkeleton key={idx} />
+            ))
+          : recentProperties.length === 0
+          ? <p className="col-span-full text-center text-gray-500">No properties found.</p>
+          : recentProperties.map(property => (
+              <PropertyCard
+                key={property._id}
+                property={property}
+                onOpenCompare={() => setShowCompareModal(true)}
+                isInSlider={false}
+              />
+            ))}
       </div>
+    </div>
+
+    {/* Recent Blogs Section */}
+    <div className="max-w-8xl mx-auto p-6 mt-12">
+      <h2 className="text-2xl font-bold mb-6">Latest Blogs</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {loadingBlogs
+          ? Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="h-72 bg-gray-100 animate-pulse rounded-lg" />
+            ))
+          : recentBlogs.length === 0
+          ? <p className="col-span-full text-center text-gray-500">No blogs found.</p>
+          : recentBlogs.map(blog => (
+              <BlogCard key={blog._id} post={blog} />
+            ))}
+      </div>
+    </div>
 
       {/* Global Compare Modal */}
       <CompareModal
