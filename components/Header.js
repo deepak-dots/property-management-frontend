@@ -35,7 +35,6 @@ export default function Header() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
   // Sync filters from query
@@ -50,12 +49,9 @@ export default function Header() {
     setStatus(router.query.status || '');
   }, [router.isReady, router.query]);
 
-  // Login status (Admin + User)
+  // Login status
   useEffect(() => {
-    const updateAdminLogin = () => setIsLoggedIn(!!localStorage.getItem('adminToken'));
     const updateUserLogin = () => setIsUserLoggedIn(!!localStorage.getItem('userToken'));
-
-    updateAdminLogin();
     updateUserLogin();
     window.addEventListener('login', updateUserLogin);
     window.addEventListener('logout', updateUserLogin);
@@ -122,9 +118,20 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full bg-black shadow sticky top-0 z-50">
+    <header className="relative isolate overflow-hidden bg-gray-900 text-gray-300 shadow sticky top-0 z-50">
+      {/* Background decorative shape */}
+      <div aria-hidden="true" className="absolute top-0 left-1/2 -z-10 -translate-x-1/2 blur-3xl xl:-top-6">
+        <div
+          style={{
+            clipPath:
+              'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+          }}
+          className="aspect-[1155/678] w-[72rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30"
+        />
+      </div>
+
       {/* Row 1: Logo | Search | Menu */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 relative z-10">
         <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-3">
           {/* Logo */}
           <Link href="/">
@@ -142,7 +149,7 @@ export default function Header() {
 
           {/* Menu */}
           <nav className="flex flex-wrap justify-center md:justify-end gap-4 text-white font-medium">
-            <Link href="/properties" className="hover:text-blue-600">
+            <Link href="/properties" className="hover:text-white-600">
               Properties
             </Link>
             <Link href="/properties/compare" className="hover:text-white-600">
@@ -178,7 +185,7 @@ export default function Header() {
       </div>
 
       {/* Row 2: Filter Bar */}
-      <div className="bg-gray-50 border-t border-gray-200 py-3 px-4">
+      <div className="bg-gray-50 border-t border-gray-200 relative z-10 py-3 px-4">
         <div className="max-w-screen-xl mx-auto">
           <FilterBar
             initialPropertyType={propertyType}
