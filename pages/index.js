@@ -9,6 +9,8 @@ import CompareModal from '../components/CompareModal';
 import PropertyCardSkeleton from '../skeleton/PropertyCardSkeleton';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
+import CardGrid from "../components/CardGrid";
+
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -21,9 +23,20 @@ export default function Home() {
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [loadingBlogs, setLoadingBlogs] = useState(true);
   const [showCompareModal, setShowCompareModal] = useState(false);
+
+  const [developers, setDevelopers] = useState([]);
+  const [projects, setProjects] = useState([]);
+
+  
+
   const router = useRouter();
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+  useEffect(() => {
+    axios.get('/properties/developers').then(res => setDevelopers(res.data));
+    axios.get('/properties/projects').then(res => setProjects(res.data));
+  }, []);
 
   useEffect(() => {
     setLoadingRecent(true);
@@ -73,14 +86,16 @@ export default function Home() {
     <div>
       {/* Banner */}
       
-      <div className="hero-banner bg-cover bg-center h-[300px] flex items-center justify-center text-white">
-        <h1 className="text-4xl font-bold bg-black bg-opacity-50 p-4 rounded">
+      <div className="hero-banner bg-[url('/banner-image.png')] bg-cover bg-center h-[300px] flex items-center justify-center text-white overflow-hidden">
+        <h1 className="text-4xl font-bold bg-black bg-opacity-50 p-4 rounded animate-slideFade">
           Welcome to Dotsquares eProperty
         </h1>
       </div>
 
+
+      
       {/* Featured Properties - Slider */}
-      <div className="max-w-8xl mx-auto p-6 mt-12">
+      <div className="max-w-7xl mx-auto p-6 mt-12">
         <h2 className="text-2xl font-bold mb-6">Featured Properties</h2>
 
         <Swiper
@@ -119,7 +134,7 @@ export default function Home() {
       </div>
 
 
-      {/* ✅ Testimonials Section */}
+      {/* Testimonials Section */}
       <section className="bg-black relative overflow-hidden py-10" id="testimonial">
         <div className="absolute right-0">
           <img
@@ -152,13 +167,13 @@ export default function Home() {
               </svg>
               Testimonials
             </p>
-            <h2 className="lg:text-[52px] text-[40px] font-medium text-white">
+            <h2 className="lg:text-[40px] text-[32px] font-medium text-white">
               What our clients say
             </h2>
           </div>
 
           {/* Testimonials Wrapper */}
-          <div className="relative mt-9">
+          <div className="relative">
             <div className="lg:flex items-center gap-11">
               <div className="flex items-start gap-11 lg:pr-20">
                 <div>
@@ -179,12 +194,12 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="text-white lg:text-3xl text-2xl">
+                  <p className="text-white ">
                     I found my ideal home in no time! The listings were detailed,
                     the photos were accurate, and the whole process felt seamless.
                     Customer service was top-notch, answering all my questions. I
                     will definitely use this platform again!
-                  </h4>
+                  </p>
                   <div className="flex items-center mt-8 gap-6">
                     <img
                       alt="Emily & John Smith"
@@ -221,8 +236,10 @@ export default function Home() {
         </div>
       </section>
 
+      
 
-    <div className="container max-w-8xl mx-auto px-5 py-10 2xl:px-0">
+
+    <div className="container max-w-7xl mx-auto px-5 py-10 2xl:px-0">
       {/* 🎥 Video Background */}
       <div className="relative overflow-hidden">
         <video
@@ -255,7 +272,7 @@ export default function Home() {
     </div>
 
     {/* Recently Added Properties - Grid */}
-    <div className="max-w-8xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-6">Recently Added Properties</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {loadingRecent
@@ -275,10 +292,65 @@ export default function Home() {
       </div>
     </div>
 
+     {/* Developer Section */}
+     <div className="max-w-7xl mx-auto p-6">
+      <section className="mb-10">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Top Developers</h2>
+          <Link
+            href="/properties/developers"
+            className="text-sm font-medium text-blue-600 hover:text-blue-800 transition"
+          >
+            View All →
+          </Link>
+        </div>
+
+        {/* Developer Card Grid */}
+        <CardGrid
+          data={developers}
+          linkKey="developer"
+          gradientClass="flex items-center justify-center h-40 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white text-center rounded-2xl group-hover:scale-[1.03] transition-transform duration-300"
+          limit={10}
+        />
+       
+      </section>
+    </div>
+
+    {/* Project Section */}
+    <div className="max-w-7xl mx-auto p-6">
+      <section>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Popular Projects</h2>
+          <Link
+            href="/properties/projects"
+            className="text-sm font-medium text-green-600 hover:text-green-800 transition"
+          >
+            View All →
+          </Link>
+        </div>
+
+        {/* Project Card Grid */}
+        <CardGrid
+          data={projects}
+          linkKey="project"
+          gradientClass="flex items-center justify-center h-40 bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 text-white text-center rounded-2xl group-hover:scale-[1.03] transition-transform duration-300"
+          limit={10}
+          />       
+      </section>
+    </div>
+
     {/* Recent Blogs Section */}
-    <div className="max-w-8xl mx-auto p-6 mt-12">
-      <h2 className="text-2xl font-bold mb-6">Latest Blogs</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Latest Blogs</h2>
+          <Link
+            href="/blogs"
+            className="text-sm font-medium text-blue-600 hover:text-blue-800 transition"
+          >
+            View All →
+          </Link>
+        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {loadingBlogs
           ? Array.from({ length: 4 }).map((_, idx) => (
               <div key={idx} className="h-72 bg-gray-100 animate-pulse rounded-lg" />
