@@ -8,14 +8,13 @@ export default function AdminSidebar({ onLogout }) {
   const navLinks = [
     { href: "/", label: "View Website", external: true },
     { href: "/admin/admin-profile", label: "Profile" },
-    { href: "/admin/dashboard", label: "All Properties" },
-    { href: "/admin/add-property", label: "Add New Property" },
-    { href: "/admin/quote-form-enquiries", label: "Enquiry Contact" },
-    { href: "/admin/review-rating-list", label: "Review Rating list" },
-    { href: "/admin/cms-pages/contact-us-list", label: "Contact Us List" },
-    { href: "/admin/cms-pages/customers", label: "Customers" },
+    { href: "/admin/dashboard", label: "Properties" },
     { href: "/admin/cms-pages/pages", label: "Pages" },
     { href: "/admin/blogs/", label: "Blogs" },
+    { href: "/admin/cms-pages/customers", label: "Customers" },
+    { href: "/admin/quote-form-enquiries", label: "Enquiries" },
+    { href: "/admin/cms-pages/contact-us-list", label: "Contact List" },
+    { href: "/admin/review-rating-list", label: "Review Rating list" },
     
   ];
 
