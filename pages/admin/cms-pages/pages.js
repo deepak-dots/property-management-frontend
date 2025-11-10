@@ -1,9 +1,9 @@
-// pages/admin/cms-pages/pages.js
 import { useEffect, useState } from 'react';
 import axios from '../../../utils/axiosInstance';
 import Link from 'next/link';
-import AdminSidebar from '../../../components/AdminSidebar';
 import { useRouter } from 'next/router';
+import AdminSidebar from '../../../components/AdminSidebar';
+import { toast } from 'react-toastify';
 
 export default function CmsPages() {
   const [pages, setPages] = useState([]);
@@ -11,121 +11,154 @@ export default function CmsPages() {
   const [modal, setModal] = useState({ show: false, action: null, page: null });
   const router = useRouter();
 
-  useEffect(() => {
-    async function fetchPages() {
-      try {
-        const res = await axios.get('/pages');
-        setPages(res.data);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
+  // ------------------- FETCH PAGES -------------------
+  const fetchPages = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        router.push('/admin/login');
+        return;
       }
+
+      const res = await axios.get('/pages', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPages(res.data || []);
+    } catch (err) {
+      console.error('Error fetching pages:', err);
+      toast.error('Failed to fetch pages');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchPages();
   }, []);
 
+  // ------------------- HANDLE LOGOUT -------------------
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    window.dispatchEvent(new Event('logout'));
+    router.push('/admin/login');
+  };
+
+  // ------------------- CONFIRM ACTION -------------------
   const handleConfirm = async () => {
     if (!modal.page) return;
+
     try {
+      const token = localStorage.getItem('adminToken');
       if (modal.action === 'delete') {
-        await axios.delete(`/pages/${modal.page._id}`);
+        await axios.delete(`/pages/${modal.page._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setPages((prev) => prev.filter((p) => p._id !== modal.page._id));
+        toast.success('Page deleted successfully');
       } else if (modal.action === 'duplicate') {
         const duplicatePage = {
           title: modal.page.title + ' Copy',
           slug: modal.page.slug + '-copy',
           content: modal.page.content,
         };
-        const res = await axios.post('/pages', duplicatePage);
+        const res = await axios.post('/pages', duplicatePage, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setPages((prev) => [...prev, res.data]);
+        toast.success('Page duplicated successfully');
       }
-      setModal({ show: false, action: null, page: null });
     } catch (err) {
-      console.error(err);
-      alert('Action failed');
+      console.error('Action failed:', err);
+      toast.error('Action failed');
+    } finally {
       setModal({ show: false, action: null, page: null });
     }
   };
 
-  if (loading) return <p className="p-6">Loading pages...</p>;
-
+  // ------------------- RENDER -------------------
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <AdminSidebar />
+      <AdminSidebar onLogout={handleLogout} />
 
-      {/* Main content */}
-      <main className="flex-1 bg-gray-100 p-6">
-        <h1 className="text-2xl font-bold mb-4">Pages</h1>
-        <Link href="/admin/cms-pages/add-page">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded mb-4">
-            Add New Page
-          </button>
-        </Link>
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <div className="max-w-7xl mx-auto bg-white shadow-md rounded-lg p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">CMS Pages</h1>
+            <Link href="/admin/cms-pages/add-page">
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Add New Page
+              </button>
+            </Link>
+          </div>
 
-        <table className="min-w-full border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border px-4 py-2 text-center">Title</th>
-              <th className="border px-4 py-2 text-center">Slug</th>
-              <th className="border px-4 py-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pages.length === 0 ? (
-              <tr>
-                <td colSpan="3" className="text-center py-4">
-                  No pages found.
-                </td>
-              </tr>
-            ) : (
-              pages.map((page) => (
-                <tr key={page._id}>
-                  <td className="border px-4 py-2 text-center">{page.title}</td>
-                  <td className="border px-4 py-2 text-center">{page.slug}</td>
-                  <td className="border px-4 py-2 text-center space-x-2">
-                    {/* Edit button */}
-                    <Link href={`/admin/cms-pages/${page._id}`}>
-                      <button className="bg-yellow-500 text-white px-2 py-1 rounded">
-                        Edit
-                      </button>
-                    </Link>
+          {/* Table / Loading / Empty */}
+          {loading ? (
+            <p className="text-gray-500">Loading pages...</p>
+          ) : pages.length === 0 ? (
+            <p className="text-gray-500">No pages found.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full border border-gray-200 text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-2 border text-left">Title</th>
+                    <th className="p-2 border text-left">Slug</th>
+                    <th className="p-2 border text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pages.map((page) => (
+                    <tr key={page._id} className="hover:bg-gray-50">
+                      <td className="p-2 border">{page.title}</td>
+                      <td className="p-2 border">{page.slug}</td>
+                      <td className="p-2 border text-center space-x-2">
+                        <Link href={`/admin/cms-pages/${page._id}`}>
+                          <button className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">
+                            Edit
+                          </button>
+                        </Link>
 
-                    {/* View button */}
-                    <button
-                      onClick={() => router.push(`/page/${page.slug}`)}
-                      className="bg-blue-500 text-white px-2 py-1 rounded"
-                    >
-                      View
-                    </button>
+                        <button
+                          onClick={() => router.push(`/page/${page.slug}`)}
+                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                        >
+                          View
+                        </button>
 
-                    {/* Duplicate button */}
-                    <button
-                      onClick={() => setModal({ show: true, action: 'duplicate', page })}
-                      className="bg-indigo-500 text-white px-2 py-1 rounded"
-                    >
-                      Duplicate
-                    </button>
+                        <button
+                          onClick={() =>
+                            setModal({ show: true, action: 'duplicate', page })
+                          }
+                          className="bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600"
+                        >
+                          Duplicate
+                        </button>
 
-                    {/* Delete button */}
-                    <button
-                      onClick={() => setModal({ show: true, action: 'delete', page })}
-                      className="bg-red-600 text-white px-2 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                        <button
+                          onClick={() =>
+                            setModal({ show: true, action: 'delete', page })
+                          }
+                          className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
 
         {/* Confirmation Modal */}
         {modal.show && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white rounded p-6 w-96">
+            <div className="bg-white rounded-lg p-6 w-96">
               <h2 className="text-xl font-bold mb-4">
                 {modal.action === 'delete' ? 'Delete Page' : 'Duplicate Page'}
               </h2>
@@ -135,13 +168,13 @@ export default function CmsPages() {
               <div className="flex justify-end space-x-4">
                 <button
                   onClick={() => setModal({ show: false, action: null, page: null })}
-                  className="px-4 py-2 border rounded"
+                  className="px-4 py-2 border rounded hover:bg-gray-100"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleConfirm}
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   Yes
                 </button>
