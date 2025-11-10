@@ -18,6 +18,7 @@ export default function UserSidebar({ user }) {
   };
 
   const menuItems = [
+    { name: 'View Website', path: '/', external: true },
     { name: 'Dashboard', icon: <HomeIcon className="h-5 w-5 mr-2" />, path: '/user/dashboard' },
     { name: 'My Profile', icon: <UserIcon className="h-5 w-5 mr-2" />, path: '/user/profile' },
     { name: 'Edit Profile', icon: <PencilIcon className="h-5 w-5 mr-2" />, path: '/user/profile/edit' },
@@ -25,12 +26,9 @@ export default function UserSidebar({ user }) {
     { name: 'My Enquiries', icon: <ChatBubbleLeftEllipsisIcon className="h-5 w-5 mr-2" />, path: '/user/enquiries' },
   ];
 
-  // Determine active index
   let activeIndex = -1;
   if (pathname) {
-    // Try exact match first
     activeIndex = menuItems.findIndex(item => item.path === pathname);
-    // If no exact match, try startsWith for parent route
     if (activeIndex === -1) {
       activeIndex = menuItems.findIndex(item => pathname.startsWith(item.path + '/'));
     }
@@ -47,17 +45,34 @@ export default function UserSidebar({ user }) {
       </div>
 
       {/* Sidebar */}
-      <aside className={`bg-white shadow-md sm:block fixed sm:relative top-0 left-0 h-full sm:h-auto w-64 p-6 transition-transform transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 z-50`}>
+      <aside className={`bg-gray-800 text-white shadow-md sm:block fixed sm:relative top-0 left-0 h-full sm:h-auto w-64 p-6 transition-transform transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 z-50`}>
         <h2 className="text-2xl font-bold mb-6 hidden sm:block">Welcome, {user?.name || 'User'}</h2>
         <nav className="flex flex-col space-y-2">
           {menuItems.map((item, idx) => {
-            const isActive = idx === activeIndex; // only one active
+            const isActive = idx === activeIndex;
+            
+            if (item.external) {
+              return (
+                <a
+                  key={idx}
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center px-4 py-2 rounded text-left transition
+                    hover:bg-gray-200`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.icon} {item.name}
+                </a>
+              );
+            }
+
             return (
               <button
                 key={idx}
                 onClick={() => { router.push(item.path); setIsOpen(false); }}
                 className={`flex items-center px-4 py-2 rounded text-left transition
-                  ${isActive ? 'bg-gray-300 font-semibold' : 'hover:bg-gray-200'}`}
+                  ${isActive ? 'bg-gray-700 font-semibold' : 'hover:bg-gray-700'}`}
               >
                 {item.icon} {item.name}
               </button>
