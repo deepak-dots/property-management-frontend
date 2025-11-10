@@ -97,7 +97,7 @@ export default function EditPropertyPage() {
 
       {/* Main Content */}
       <div className="flex-1 p-8">
-        <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-8 space-y-6">
+        <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-xl p-8 space-y-6">
 
           {initialData ? (
             <>
