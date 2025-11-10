@@ -23,9 +23,11 @@ const Footer = FooterImport?.default || FooterImport;
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
 
-  // Add paths where header/footer should be hidden
-  const hideHeaderFooter = [];
-  const shouldHide = hideHeaderFooter.includes(router.pathname);
+  // Paths where header/footer should be hidden
+  const hideHeaderFooter = ['/admin', '/admin/login', '/dashboard', '/dashboard/login', '/user'];
+  
+  // Check if current path should hide header/footer
+  const shouldHide = hideHeaderFooter.some(path => router.pathname.startsWith(path));
 
   return (
     <AuthProvider>
