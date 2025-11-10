@@ -19,6 +19,8 @@ export default function Properties() {
     furnishing: '',
     transactionType: '',
     status: '',
+    developer: '',
+    project: '',
     radius: null, 
     lat: null, 
     lng: null, 
@@ -40,7 +42,63 @@ export default function Properties() {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 12;
 
+  const propertyTypes = ["Flat", "Villa", "Duplex"];
+  const [propertiesByType, setPropertiesByType] = useState({});
+  const [loadingByType, setLoadingByType] = useState({});
+
   const router = useRouter();
+
+
+  const { type } = router.query;
+
+
+  useEffect(() => {
+    const fetchPropertiesByType = async () => {
+      try {
+        setLoading(true);
+  
+        const params = { ...filters, page: currentPage, limit: itemsPerPage };
+  
+        // If URL has ?type=flat, override the propertyType filter
+        if (type) params.propertyType = type;
+  
+        // Remove null/empty values
+        Object.keys(params).forEach(key => {
+          if (params[key] === null || params[key] === '') delete params[key];
+        });
+  
+        const res = await axios.get('/properties', { params });
+        const propertyList = res.data.properties || [];
+  
+        if (type) {
+          // Only keep that type
+          setPropertiesByType({ [type]: propertyList });
+        } else {
+          // Group by type
+          const grouped = {};
+          propertyList.forEach(p => {
+            if (!grouped[p.propertyType]) grouped[p.propertyType] = [];
+            grouped[p.propertyType].push(p);
+          });
+          setPropertiesByType(grouped);
+        }
+  
+        // set total pages
+        setTotalPages(res.data.totalPages || 1);
+      } catch (err) {
+        console.error(err);
+        setPropertiesByType({});
+        setTotalPages(1);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    if (filters.lat && filters.lng) fetchPropertiesByType();
+  }, [filters, currentPage, type]);
+  
+  
+
 
   // Get user location
   useEffect(() => {
@@ -102,6 +160,7 @@ export default function Properties() {
         const updated = { ...prev };
 
         Object.keys(query).forEach((key) => {
+          
           // Convert numeric fields properly
           if (["priceMin", "priceMax", "radius", "lat", "lng"].includes(key)) {
             updated[key] = Number(query[key]);
@@ -210,8 +269,33 @@ export default function Properties() {
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-8xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">Properties</h1>
+
+
+        {/* <div className="space-y-12">
+          {propertyTypes.map((type) => (
+            <div key={type}>
+              {propertiesByType[type]?.length > 0 && (
+                <>
+                  <h2 className="text-2xl font-semibold mb-4">{type}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {loadingByType[type]
+                      ? Array.from({ length: 4 }).map((_, idx) => <PropertyCardSkeleton key={idx} />)
+                      : propertiesByType[type].map((property) => (
+                          <PropertyCard
+                            key={property._id}
+                            property={property}
+                            onOpenCompare={() => setShowCompareModal(true)}
+                          />
+                        ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div> */}
+
         <div className="flex flex-col md:flex-row gap-6">
           <PropertyFilters
             filters={filters}
@@ -220,7 +304,7 @@ export default function Properties() {
             onClearFilters={clearFilters}
           />
 
-          <div className="md:w-4/4 w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="md:w-4/4 w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading ? (
               Array.from({ length: itemsPerPage }).map((_, idx) => (
                 <PropertyCardSkeleton key={idx} />
