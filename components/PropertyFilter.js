@@ -23,7 +23,7 @@ export default function PropertyFilters({ filters, filterOptions, onFilterChange
   };
 
   return (
-    <div className="md:w-1/4 w-full bg-white shadow p-4 rounded h-fit space-y-6">
+    <div className="md:w-1/3 w-full bg-white shadow p-4 rounded h-fit space-y-6">
       <h3 className="text-lg font-semibold mb-4">Filters</h3>
 
       {/* Search */}
