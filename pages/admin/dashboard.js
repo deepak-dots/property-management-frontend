@@ -349,7 +349,7 @@ export default function AdminDashboard() {
                         {p.title}
                       </Link>
                     </td>
-                    <td className="px-2 py-1 border">{p.propertyType || '-'}</td>
+                    <td className="px-2 py-1 border">{p.propertyType || '-'} ({p.developer || '-'}) </td>
                     <td className="px-2 py-1 border">{p.furnishing || '-'} ({p.bhkType || '-'})</td>
                     <td className="px-2 py-1 border">{p.price ? `₹${p.price}` : '-'}</td>
                     <td className="px-2 py-1 border">{p.city || '-'}</td>
