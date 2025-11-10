@@ -1,106 +1,67 @@
-import { useState } from 'react';
-import axios from '../utils/axiosInstance'; 
+import NewsLetterSection from '../components/NewsLetterSection';
 
 export default function Footer() {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState(''); 
-  const [message, setMessage] = useState('');
-
-  const handleSubscribe = async () => {
-    if (!email) return setMessage('Please enter your email.');
-    try {
-      const res = await axios.post('/user/newsletter/subscribe', { email, name });
-      setMessage(res.data.message || 'Subscribed!');
-      setEmail('');
-      setName('');
-    } catch (err) {
-      setMessage(err.response?.data?.message || 'Something went wrong.');
-    }
-  };
-
-
   return (
-    <footer className="bg-black text-gray-300 py-10 mt-0">
-      <div className="container mx-auto px-4">
+    <>
+      <NewsLetterSection />
 
-         {/* Subscribe Section */}
-         <div className="flex lg:items-center justify-between items-end lg:gap-11 pb-14 border-b border-white/10 lg:flex-nowrap flex-wrap gap-6">
-          <p className="text-white text-sm lg:max-w-1/5">
-            Stay updated with the latest news, promotions, and exclusive offers.
-          </p>
+      <footer className="relative isolate overflow-hidden bg-gray-900 text-gray-300 py-10 sm:py-20 lg:py-20 border-b">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
 
-          <div className="flex lg:flex-row flex-col items-center lg:gap-10 gap-3">
-            <div className="flex gap-2 lg:order-1 order-2">
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name (optional)"
-                className="rounded-full py-4 px-4 bg-white/10 placeholder:text-white text-white focus-visible:outline-0"
-              />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter Your Email"
-                className="rounded-full py-4 px-6 bg-white/10 placeholder:text-white text-white focus-visible:outline-0"
-              />
-              <button
-                onClick={handleSubscribe}
-                className="text-black bg-white py-4 px-8 font-semibold rounded-full hover:bg-white hover:text-black duration-300 hover:cursor-pointer"
-              >
-                Subscribe
-              </button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+            
+            {/* About */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">About</h3>
+              <p className="text-sm leading-relaxed">
+                Dotsquares Property is your trusted partner in finding the perfect home.
+                We specialize in offering premium real estate solutions tailored to your needs.
+              </p>
             </div>
-            <p className="text-white text-sm lg:max-w-[45%] order-1 lg:order-2">
-              {message || 'By subscribing, you agree to receive our promotional emails. You can unsubscribe at any time.'}
-            </p>
+
+            {/* Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Links</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
+                <li><a href="/properties" className="hover:text-white transition-colors">Properties</a></li>
+                <li><a href="/blogs" className="hover:text-white transition-colors">Blogs</a></li>
+                <li><a href="/page/about-us" className="hover:text-white transition-colors">About Us</a></li>
+                <li><a href="/page/contact-us" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="/page/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/page/terms-and-conditions" className="hover:text-white transition-colors">Terms and Conditions</a></li>
+              </ul>
+            </div>
+
+            {/* Social */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Link</h3>
+              <ul className="space-y-2 text-sm text-center md:text-left">
+                <li className="hover:text-white transition-colors cursor-default">Facebook</li>
+                <li className="hover:text-white transition-colors cursor-default">Twitter</li>
+                <li className="hover:text-white transition-colors cursor-default">Instagram</li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Bottom text */}
+          <div className="text-center mt-8 border-t border-gray-700 pt-4 text-sm">
+            <p>© {new Date().getFullYear()} Dotsquares Property. All rights reserved.</p>
           </div>
         </div>
 
-        {/* ✅ Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left mt-14">
-          
-          {/* About */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3">About</h3>
-            <p className="text-sm leading-relaxed">
-              Dotsquares Property is your trusted partner in finding the perfect home.
-              We specialize in offering premium real estate solutions tailored to your needs.
-            </p>
-          </div>
-
-          {/* Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
-              <li><a href="/properties" className="hover:text-white transition-colors">Properties</a></li>
-              <li><a href="/blogs" className="hover:text-white transition-colors">Blogs</a></li>
-              <li><a href="/page/about-us" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="/page/contact-us" className="hover:text-white transition-colors">Contact Us</a></li>
-              <li><a href="/page/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="/page/terms-and-conditions" className="hover:text-white transition-colors">Terms and Conditions</a></li>
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Link</h3>
-            <ul className="space-y-2 text-sm text-center md:text-left">
-              <li className="hover:text-white transition-colors cursor-default">Facebook</li>
-              <li className="hover:text-white transition-colors cursor-default">Twitter</li>
-              <li className="hover:text-white transition-colors cursor-default">Instagram</li>
-            </ul>
-          </div>
-
+        {/* Footer background decorative shape */}
+        <div aria-hidden="true" className="absolute top-0 left-1/2 -z-10 -translate-x-1/2 blur-3xl xl:-top-6">
+          <div
+            style={{
+              clipPath:
+                'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+            }}
+            className="aspect-[1155/678] w-[72rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30"
+          />
         </div>
-
-        {/* Bottom text */}
-        <div className="text-center mt-8 border-t border-gray-700 pt-4 text-sm">
-          <p>© {new Date().getFullYear()} Dotsquares Property. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }
